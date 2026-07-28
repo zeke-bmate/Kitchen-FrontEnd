@@ -1,6 +1,7 @@
-import { HomeOutlined, Inventory2Outlined, LocalDining, LocalShipping, MenuBook, ShoppingCart, Warehouse } from "@mui/icons-material";
+import { HomeOutlined, Inventory2Outlined, LocalDining, LocalShipping, MenuBook, ShoppingCart, Warehouse, LogoutOutlined } from "@mui/icons-material";
 import { AppBar, Box, Button, Toolbar, Typography } from "@mui/material";
 import { Link } from "react-router-dom";
+import useAuth from "../context/useAuth";
 
 const pages = [{ name: 'Home', path: '/sales-import', icon: HomeOutlined},
                { name: 'Suppliers', path: '/suppliers', icon: LocalShipping},
@@ -11,6 +12,13 @@ const pages = [{ name: 'Home', path: '/sales-import', icon: HomeOutlined},
                { name: 'Finished Inventory', path: '/finished-inventory', icon: Warehouse},
 ];
 function NavBar() {
+
+    const { logout } = useAuth();
+
+    const handleLogout = () => {
+        logout();
+    }
+
     return (
         <AppBar position='static' elevation={1}>
             <Toolbar sx={{ backgroundColor: 'primary.main'}}>
@@ -26,6 +34,13 @@ function NavBar() {
                             {page.name}
                         </Button>
                     )})}
+                    <Button
+                      onClick={handleLogout}
+                      sx={{ color: "#FFF" }}
+                      startIcon={<LogoutOutlined />}
+                    >
+                      Logout
+                    </Button>
                 </Box>
             </Toolbar>
         </AppBar>

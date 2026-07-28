@@ -16,6 +16,7 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
+import apiFetch from "../api/apiFetch.ts";
 
 function RawIngredientsPage() {
   const [ingredients, setIngredients] = useState<RawIngredient[]>([]);
@@ -27,7 +28,6 @@ function RawIngredientsPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [nameError, setNameError] = useState<string | null>(null);
   const [weightError, setWeightError] = useState<string | null>(null);
-  const apiUrl = import.meta.env.VITE_API_URL;
 
   const handleNameChange = (event) => {
     setName(event.target.value);
@@ -55,7 +55,7 @@ function RawIngredientsPage() {
     setSubmitting(true);
     const data = { name: trimmedName, currentWeightKg: currentWeightKgNum };
     try {
-      const response = await fetch(apiUrl + "/api/raw-ingredients", {
+      const response = await apiFetch("/api/raw-ingredients", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -90,7 +90,7 @@ function RawIngredientsPage() {
   useEffect(() => {
     const fetchIngredientsData = async () => {
       try {
-        const response = await fetch(apiUrl + "/api/raw-ingredients");
+        const response = await apiFetch("/api/raw-ingredients");
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }

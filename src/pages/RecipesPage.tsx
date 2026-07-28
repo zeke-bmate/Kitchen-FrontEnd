@@ -17,6 +17,7 @@ import {
 } from "@mui/material";
 import RecipeDetailsDialog from "../components/RecipeDetailsDialog";
 import CreateRecipeDialog from "../components/CreateRecipeDialog";
+import apiFetch from "../api/apiFetch";
 
 function RecipesPage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -25,7 +26,6 @@ function RecipesPage() {
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const apiUrl = import.meta.env.VITE_API_URL;
 
   const handleRecipeClick = (recipe: Recipe) => {
     setSelectedRecipe(recipe);
@@ -52,7 +52,7 @@ function RecipesPage() {
   useEffect(() => {
     const fetchRecipesData = async () => {
       try {
-        const response = await fetch(apiUrl + "/api/recipes");
+        const response = await apiFetch("/api/recipes");
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }

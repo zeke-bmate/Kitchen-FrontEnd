@@ -22,6 +22,7 @@ import CloseIcon from "@mui/icons-material/Close";
 import type { RawIngredient } from "../types/rawIngredient";
 import type { Recipe } from "../types/recipe";
 import type { IngredientError } from "../types/ingredientError";
+import apiFetch from "../api/apiFetch";
 
 type CreateRecipeDialogProps = {
   open: boolean;
@@ -52,12 +53,11 @@ function CreateRecipeDialog({
   const [ingredientErrors, setIngredientErrors] = useState<IngredientError[]>(
     [],
   );
-  const apiUrl = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const fetchRawIngredientsData = async () => {
       try {
-        const response = await fetch(apiUrl + "/api/raw-ingredients");
+        const response = await apiFetch("/api/raw-ingredients");
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
@@ -168,7 +168,7 @@ function CreateRecipeDialog({
       ingredients: ingredients,
     };
     try {
-      const response = await fetch(apiUrl + "/api/recipes", {
+      const response = await apiFetch("/api/recipes", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

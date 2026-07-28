@@ -22,6 +22,7 @@ import type { ImportResult } from "../types/importResult";
 import type { PreviewRow } from "../types/previewRow";
 import type { Recipe } from "../types/recipe";
 import DashboardSection from "../components/DashboardSection";
+import apiFetch from "../api/apiFetch";
 
 function SalesImportPage() {
   const [file, setFile] = useState<File | null>(null);
@@ -37,11 +38,10 @@ function SalesImportPage() {
   const [editingMappings, setEditingMappings] = useState<
     Record<string, boolean>
   >({});
-  const apiUrl = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const fetchRecipes = async () => {
-      const response = await fetch(apiUrl + "/api/recipes");
+      const response = await apiFetch("/api/recipes");
       const data = await response.json();
       setRecipes(data);
     };
@@ -55,7 +55,7 @@ function SalesImportPage() {
   ) => {
     if (!recipeId) return;
 
-    const response = await fetch(apiUrl + "/api/sales-import/mappings", {
+    const response = await apiFetch("/api/sales-import/mappings", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -104,7 +104,7 @@ function SalesImportPage() {
     formData.append("file", file);
 
     try {
-      const response = await fetch(apiUrl + "/api/sales-import/preview", {
+      const response = await apiFetch("/api/sales-import/preview", {
         method: "POST",
         body: formData,
       });
@@ -132,7 +132,7 @@ function SalesImportPage() {
     setError(null);
 
     try {
-      const response = await fetch(apiUrl + "/api/sales-import/confirm", {
+      const response = await apiFetch("/api/sales-import/confirm", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

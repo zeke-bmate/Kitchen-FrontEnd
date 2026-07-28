@@ -22,6 +22,7 @@ import {
   FormControl,
   FormHelperText,
 } from "@mui/material";
+import apiFetch from "../api/apiFetch";
 
 function ProductionBatchesPage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -37,7 +38,6 @@ function ProductionBatchesPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [recipeError, setRecipeError] = useState<string | null>(null);
   const [quantityError, setQuantityError] = useState<string | null>(null);
-  const apiUrl = import.meta.env.VITE_API_URL;
 
   const handleRecipeChange = (event) => {
     setRecipeError(null);
@@ -75,7 +75,7 @@ function ProductionBatchesPage() {
       quantityProduced: quantityProducedNum,
     };
     try {
-      const response = await fetch(apiUrl + "/api/production-batches", {
+      const response = await apiFetch("/api/production-batches", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -109,7 +109,7 @@ function ProductionBatchesPage() {
   useEffect(() => {
     const fetchRecipesData = async () => {
       try {
-        const response = await fetch(apiUrl + "/api/recipes");
+        const response = await apiFetch("/api/recipes");
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
@@ -132,7 +132,7 @@ function ProductionBatchesPage() {
   useEffect(() => {
     const fetchProductionData = async () => {
       try {
-        const response = await fetch(apiUrl + "/api/production-batches");
+        const response = await apiFetch("/api/production-batches");
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
