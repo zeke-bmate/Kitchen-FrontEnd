@@ -3,19 +3,21 @@ import type { DashboardMetrics } from "../types/dashboardMetrics";
 import { Stack, Typography, Alert, Card, CardContent } from "@mui/material";
 import LowStockTable from "./LowStockTable";
 import RecentImportTable from "./RecentImportsTable";
+import apiFetch from "../api/apiFetch";
 
 function DashboardSection() {
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const apiUrl = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const fetchMetrics = async () => {
       try {
-        const response = await fetch(apiUrl + "/api/dashboard");
+        const response = await apiFetch("/api/dashboard");
+        
         if (!response.ok) {
-          throw new Error("Network response was not ok");
+          const errorText = await response.text();
+          throw new Error(`${response.status}: ${errorText}`);
         }
         const data = await response.json();
         setMetrics(data);

@@ -21,6 +21,7 @@ import type { Purchase } from "../types/purchase";
 import type { PurchaseItemInput } from "../types/purchaseItemInput";
 import type { PurchaseItemError } from "../types/purchaseItemError";
 import type { Supplier } from "../types/supplier";
+import apiFetch from "../api/apiFetch";
 
 type CreatePurchaseDialogProps = {
   open: boolean;
@@ -52,7 +53,6 @@ function CreatePurchaseDialog({
   const [purchaseItemErrors, setPurchaseItemErrors] = useState<
     PurchaseItemError[]
   >([]);
-  const apiUrl = import.meta.env.VITE_API_URL;
 
   const handleAddItemClick = () => {
     setPurchaseItems((previousItems) => [
@@ -175,7 +175,7 @@ function CreatePurchaseDialog({
       items: purchaseItems,
     };
     try {
-      const response = await fetch(apiUrl + "/api/purchases", {
+      const response = await apiFetch("/api/purchases", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

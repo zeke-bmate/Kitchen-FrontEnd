@@ -15,6 +15,7 @@ import {
   TableCell,
   TableBody,
 } from "@mui/material";
+import apiFetch from "../api/apiFetch";
 
 function SuppliersPage() {
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -24,14 +25,13 @@ function SuppliersPage() {
   const [nameError, setNameError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const apiUrl = import.meta.env.VITE_API_URL;
 
-  const handleNameChange = (event) => {
+  const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNameError(null);
     setName(event.target.value);
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const trimmedName = name.trim();
     setNameError(null);
@@ -43,7 +43,7 @@ function SuppliersPage() {
     setSubmitting(true);
     const data = { name: trimmedName };
     try {
-      const response = await fetch(apiUrl + "/api/suppliers", {
+      const response = await apiFetch("/api/suppliers", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -77,7 +77,7 @@ function SuppliersPage() {
   useEffect(() => {
     const fetchSuppliersData = async () => {
       try {
-        const response = await fetch(apiUrl + "/api/suppliers");
+        const response = await apiFetch("/api/suppliers");
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }

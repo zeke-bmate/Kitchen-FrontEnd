@@ -9,6 +9,7 @@ import TableCell from "@mui/material/TableCell";
 import TableHead from "@mui/material/TableHead";
 import Paper from "@mui/material/Paper";
 import Typography from "@mui/material/Typography";
+import apiFetch from "../api/apiFetch";
 
 function FinishedInventoryPage() {
   const [finishedInventory, setFinishedInventory] = useState<
@@ -16,12 +17,11 @@ function FinishedInventoryPage() {
   >([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const apiUrl = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const fetchFinishedInventoryData = async () => {
       try {
-        const response = await fetch(apiUrl + "/api/finished-inventory");
+        const response = await apiFetch("/api/finished-inventory");
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }

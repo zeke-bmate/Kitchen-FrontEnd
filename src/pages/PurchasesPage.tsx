@@ -16,6 +16,7 @@ import {
 } from "@mui/material";
 import PurchaseDetailsDialog from "../components/PurchaseDetailsDialog";
 import CreatePurchaseDialog from "../components/CreatePurchaseDialog";
+import apiFetch from "../api/apiFetch";
 
 function PurchasesPage() {
   const [purchases, setPurchases] = useState<Purchase[]>([]);
@@ -32,7 +33,6 @@ function PurchasesPage() {
   );
   const [dialogOpen, setDialogOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
-  const apiUrl = import.meta.env.VITE_API_URL;
 
   const handlePurchaseClick = (purchase: Purchase) => {
     setSelectedPurchase(purchase);
@@ -62,7 +62,7 @@ function PurchasesPage() {
   useEffect(() => {
     const fetchPurchasesData = async () => {
       try {
-        const response = await fetch(apiUrl + "/api/purchases");
+        const response = await apiFetch("/api/purchases");
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
@@ -85,7 +85,7 @@ function PurchasesPage() {
   useEffect(() => {
     const fetchSuppliersData = async () => {
       try {
-        const response = await fetch(apiUrl + "/api/suppliers");
+        const response = await apiFetch("/api/suppliers");
         if (!response.ok) {
           throw new Error("Network response was not ok");
         }
