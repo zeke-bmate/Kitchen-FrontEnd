@@ -1,9 +1,10 @@
-import { HomeOutlined, Inventory2Outlined, LocalDining, LocalShipping, MenuBook, ShoppingCart, Warehouse, LogoutOutlined } from "@mui/icons-material";
+import { HomeOutlined, Inventory2Outlined, LocalDining, LocalShipping, MenuBook, ShoppingCart, Warehouse, LogoutOutlined, ReceiptOutlined } from "@mui/icons-material";
 import { AppBar, Box, Button, Toolbar, Typography } from "@mui/material";
 import { Link } from "react-router-dom";
 import useAuth from "../context/useAuth";
 
 const pages = [{ name: 'Home', path: '/sales-import', icon: HomeOutlined},
+               { name: 'Orders', path: '/orders', icon: ReceiptOutlined}, 
                { name: 'Suppliers', path: '/suppliers', icon: LocalShipping},
                { name: 'Purchases', path: '/purchases', icon: ShoppingCart},
                { name: 'Raw Ingredients', path: '/raw-ingredients', icon: Inventory2Outlined},

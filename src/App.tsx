@@ -9,6 +9,7 @@ import PurchasesPage from "./pages/PurchasesPage";
 import SalesImportPage from "./pages/SalesImportPage";
 import LoginPage from "./pages/LoginPage";
 import ProtectedRoute from "./components/ProtectedRoute";
+import OrdersPage from "./pages/OrdersPage";
 
 function ProtectedLayout() {
   return (
@@ -28,6 +29,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route element={<ProtectedLayout />}>
           <Route path="/" element={<SalesImportPage />} />
+          <Route path="/orders" element={<OrdersPage />} />
           <Route path="/raw-ingredients" element={<RawIngredientsPage />} />
           <Route path="/finished-inventory" element={<FinishedInventoryPage />} />
           <Route path="/production-batches" element={<ProductionBatchesPage />} />
