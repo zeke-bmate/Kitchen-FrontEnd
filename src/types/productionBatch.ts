@@ -1,3 +1,4 @@
+import type { Order } from "./orders";
 import type { Recipe } from "./recipe";
 
 export type ProductionBatch = {
@@ -6,4 +7,6 @@ export type ProductionBatch = {
     quantityProduced: number;
     createdAt: string;
     recipe: Recipe;
+    orderId: string | null;
+    order: Order | null;
 }
