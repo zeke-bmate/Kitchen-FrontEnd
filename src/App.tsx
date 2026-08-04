@@ -10,6 +10,7 @@ import SalesImportPage from "./pages/SalesImportPage";
 import LoginPage from "./pages/LoginPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import OrdersPage from "./pages/OrdersPage";
+import UsersPage from "./pages/UsersPage";
 
 function ProtectedLayout() {
   return (
@@ -37,6 +38,7 @@ function App() {
           <Route path="/suppliers" element={<SuppliersPage />} />
           <Route path="/purchases" element={<PurchasesPage />} />
           <Route path="/sales-import" element={<SalesImportPage />} />
+          <Route path="/users" element={<UsersPage />} />
         </Route>
       </Routes>
     </BrowserRouter>
