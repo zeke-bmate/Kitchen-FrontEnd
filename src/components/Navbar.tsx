@@ -1,4 +1,4 @@
-import { HomeOutlined, Inventory2Outlined, LocalDining, LocalShipping, MenuBook, ShoppingCart, Warehouse, LogoutOutlined, ReceiptOutlined } from "@mui/icons-material";
+import { HomeOutlined, Inventory2Outlined, LocalDining, LocalShipping, MenuBook, ShoppingCart, Warehouse, LogoutOutlined, ReceiptOutlined, GroupOutlined } from "@mui/icons-material";
 import { AppBar, Box, Button, Toolbar, Typography } from "@mui/material";
 import { Link } from "react-router-dom";
 import useAuth from "../context/useAuth";
@@ -11,6 +11,7 @@ const pages = [{ name: 'Home', path: '/sales-import', icon: HomeOutlined},
                { name: 'Recipes', path: '/recipes', icon: MenuBook},
                { name: 'Production Batches', path: '/production-batches', icon: LocalDining},
                { name: 'Finished Inventory', path: '/finished-inventory', icon: Warehouse},
+               { name: 'Users', path: '/users', icon: GroupOutlined},
 ];
 function NavBar() {
 
