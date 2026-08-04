@@ -6,8 +6,8 @@ export type Order = {
     status: OrderStatus;
     createdAt: string;
     updatedAt: string;
-    recipeId: string | null;
-    recipe: Recipe | null;
+    recipeId: string;
+    recipe: Recipe;
 }
 
 export type OrderStatus =

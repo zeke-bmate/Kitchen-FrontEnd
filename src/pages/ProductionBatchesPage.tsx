@@ -23,6 +23,8 @@ import {
   FormHelperText,
 } from "@mui/material";
 import apiFetch from "../api/apiFetch";
+import type { Order } from "../types/orders";
+import { se } from "date-fns/locale";
 
 function ProductionBatchesPage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
@@ -38,6 +40,31 @@ function ProductionBatchesPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [recipeError, setRecipeError] = useState<string | null>(null);
   const [quantityError, setQuantityError] = useState<string | null>(null);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isOrderLoading, setIsOrderLoading] = useState(true);
+  const [selectedOrderId, setSelectedOrderId] = useState("");
+  const [orderError, setOrderError] = useState<string | null>(null);
+
+  const handleOrderChange = (event) => {
+    setOrderError(null);
+    const orderId = event.target.value;
+    setSelectedOrderId(orderId);
+
+    if (!orderId) {
+        setSelectedRecipeId("");
+        setRecipeError(null);
+        return;
+    }
+    
+    const selectedOrder = orders.find(
+      (order) => order.id === orderId,
+    );
+
+    if (selectedOrder) {
+      setSelectedRecipeId(selectedOrder.recipeId);
+      setRecipeError(null);
+    }
+  }
 
   const handleRecipeChange = (event) => {
     setRecipeError(null);
@@ -73,6 +100,7 @@ function ProductionBatchesPage() {
     const data = {
       recipeId: trimmedRecipeId,
       quantityProduced: quantityProducedNum,
+      ...(selectedOrderId && { orderId: selectedOrderId }),
     };
     try {
       const response = await apiFetch("/api/production-batches", {
@@ -95,6 +123,7 @@ function ProductionBatchesPage() {
       ]);
       setSelectedRecipeId("");
       setQuantityProduced("");
+      setSelectedOrderId("");
     } catch (error) {
       if (error instanceof Error) {
         setFormError(error.message);
@@ -152,6 +181,34 @@ function ProductionBatchesPage() {
     fetchProductionData();
   }, []);
 
+  useEffect(() => {
+    const fetchOrdersData = async () => {
+      try {
+        const response = await apiFetch("/api/orders");
+        if (!response.ok) {
+          throw new Error("Network reponse was not ok");
+        }
+
+        const data = await response.json();
+
+        const activeOrders = data.filter(
+          (order: Order) => order.status !== "FINISHED"
+        );
+        setOrders(activeOrders);
+      } catch (error) {
+        if (error instanceof Error) {
+          setError(error.message);
+        } else {
+          setError("Failed to load orders data");
+        }
+      } finally {
+        setIsOrderLoading(false);
+      }
+    };
+
+    fetchOrdersData();
+  }, []);
+
   if (error) return <p>{error}</p>;
 
   return (
@@ -164,6 +221,26 @@ function ProductionBatchesPage() {
       </Typography>
       <form onSubmit={handleSubmit}>
         <Stack direction="row" spacing={5} sx={{ mb: 3 }}>
+          <FormControl error={!!orderError} sx={{ minWidth: 200 }}>
+            <InputLabel id="order-select-label">Order</InputLabel>
+            <Select
+              value={selectedOrderId}
+              onChange={handleOrderChange}
+              label="Order"
+              labelId="order-select-label"
+              autoWidth
+            >
+              <MenuItem value="">
+                <em>Manual Production</em>
+              </MenuItem>
+              {orders.map((o) => (
+                <MenuItem key={o.id} value={o.id}>
+                  {o.recipe.name} • {o.quantity} servings • {o.status}
+                </MenuItem>
+              ))}
+            </Select>
+            {!!orderError && <FormHelperText>{orderError}</FormHelperText>}
+          </FormControl>
           <FormControl error={!!recipeError} sx={{ minWidth: 200 }}>
             <InputLabel id="recipe-select-label">Recipe</InputLabel>
             <Select
@@ -172,6 +249,7 @@ function ProductionBatchesPage() {
               label="Recipe"
               labelId="recipe-select-label"
               autoWidth
+              disabled={!!selectedOrderId}
             >
               {recipes.map((r) => (
                 <MenuItem key={r.id} value={r.id}>
@@ -180,6 +258,11 @@ function ProductionBatchesPage() {
               ))}
             </Select>
             {!!recipeError && <FormHelperText>{recipeError}</FormHelperText>}
+            <FormHelperText>
+              {selectedOrderId
+                ? "Recipe is determined by the selected order."
+                : "Select a recipe for manual production."}
+            </FormHelperText>
           </FormControl>
           <TextField
             type="number"
@@ -240,6 +323,17 @@ function ProductionBatchesPage() {
                     borderBottom: "1px solid #e0e0e0",
                   }}
                 >
+                  Order
+                </TableCell>
+                <TableCell
+                  align="center"
+                  sx={{
+                    color: "white",
+                    fontWeight: 700,
+                    backgroundColor: "primary.main",
+                    borderBottom: "1px solid #e0e0e0",
+                  }}
+                >
                   Batches Produced
                 </TableCell>
                 <TableCell
@@ -263,6 +357,14 @@ function ProductionBatchesPage() {
                     sx={{ borderRight: "1px solid #e0e0e0" }}
                   >
                     {p.recipe.name}
+                  </TableCell>
+                  <TableCell
+                    align="center"
+                    sx={{ borderRight: "1px solid #e0e0e0" }}
+                  >
+                    {p.order
+                      ? `${p.order.quantity} servings • ${p.order.status}`
+                      : "Manual Production"}
                   </TableCell>
                   <TableCell
                     align="center"
