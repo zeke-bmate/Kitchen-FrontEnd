@@ -11,6 +11,7 @@ import LoginPage from "./pages/LoginPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import OrdersPage from "./pages/OrdersPage";
 import UsersPage from "./pages/UsersPage";
+import RoleRoute from "./routes/RoleRoute";
 
 function ProtectedLayout() {
   return (
@@ -29,16 +30,56 @@ function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route element={<ProtectedLayout />}>
-          <Route path="/" element={<SalesImportPage />} />
-          <Route path="/orders" element={<OrdersPage />} />
-          <Route path="/raw-ingredients" element={<RawIngredientsPage />} />
-          <Route path="/finished-inventory" element={<FinishedInventoryPage />} />
-          <Route path="/production-batches" element={<ProductionBatchesPage />} />
-          <Route path="/recipes" element={<RecipesPage />} />
-          <Route path="/suppliers" element={<SuppliersPage />} />
-          <Route path="/purchases" element={<PurchasesPage />} />
-          <Route path="/sales-import" element={<SalesImportPage />} />
-          <Route path="/users" element={<UsersPage />} />
+          <Route path="/" element={
+            <RoleRoute allowedRoles={["Admin", "DeePlace", "Echo"]}>
+              <SalesImportPage />
+            </RoleRoute>
+          } />
+          <Route path="/orders" element={
+            <RoleRoute allowedRoles={["Admin", "DeePlace", "Echo"]}>
+              <OrdersPage />
+            </RoleRoute>
+          } />
+          <Route path="/raw-ingredients" element={
+            <RoleRoute allowedRoles={["Admin", "DeePlace", "Echo"]}>
+              <RawIngredientsPage />
+            </RoleRoute>
+          } />
+          <Route path="/finished-inventory" element={
+            <RoleRoute allowedRoles={["Admin", "DeePlace", "Echo"]}>
+              <FinishedInventoryPage />
+            </RoleRoute>
+          } />
+          <Route path="/production-batches" element={
+            <RoleRoute allowedRoles={["Admin", "Echo"]}>
+              <ProductionBatchesPage />
+            </RoleRoute>
+          } />
+          <Route path="/recipes" element={
+            <RoleRoute allowedRoles={["Admin", "DeePlace", "Echo"]}>
+              <RecipesPage />
+            </RoleRoute>
+          } />
+          <Route path="/suppliers" element={
+            <RoleRoute allowedRoles={["Admin", "Echo"]}>
+              <SuppliersPage />
+            </RoleRoute>
+          } />
+          <Route path="/purchases" element={
+            <RoleRoute allowedRoles={["Admin", "Echo"]}>
+              <PurchasesPage />
+            </RoleRoute>
+          } />
+          <Route path="/sales-import" element={
+            <RoleRoute allowedRoles={["Admin", "DeePlace", "Echo"]}>
+              <SalesImportPage />
+            </RoleRoute>
+          } />
+          <Route path="/users" element={
+            <RoleRoute allowedRoles={["Admin"]}>
+              <UsersPage />
+            </RoleRoute>
+          } />
         </Route>
       </Routes>
     </BrowserRouter>
