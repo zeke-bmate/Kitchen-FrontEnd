@@ -17,6 +17,7 @@ import {
   Typography,
 } from "@mui/material";
 import apiFetch from "../api/apiFetch.ts";
+import AdjustmentInventoryDialog from "../components/AdjustmentInventoryDialog.tsx";
 
 function RawIngredientsPage() {
   const [ingredients, setIngredients] = useState<RawIngredient[]>([]);
@@ -28,6 +29,8 @@ function RawIngredientsPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [nameError, setNameError] = useState<string | null>(null);
   const [weightError, setWeightError] = useState<string | null>(null);
+  const [selectedIngredient, setSelectedIngredient] = useState<RawIngredient | null>(null);
+  const [adjustDialogOpen, setAdjustDialogOpen] = useState(false);
 
   const handleNameChange = (event) => {
     setName(event.target.value);
@@ -87,12 +90,45 @@ function RawIngredientsPage() {
     }
   };
 
+  const handleOpenAdjustDialog = (
+    ingredient: RawIngredient
+  ) => {
+    setSelectedIngredient(ingredient);
+    setAdjustDialogOpen(true);
+  };
+  
+  const handleCloseAdjustDialog = () => {
+    setAdjustDialogOpen(false);
+    setSelectedIngredient(null);
+  };
+  
+  const handleInventoryUpdated = (
+    updatedIngredient: RawIngredient
+  ) => {
+    setIngredients((previousIngredients) =>
+      previousIngredients.map((ingredient) =>
+        ingredient.id === updatedIngredient.id
+          ? updatedIngredient
+          : ingredient
+      )
+    );
+  
+    setAdjustDialogOpen(false);
+    setSelectedIngredient(null);
+  };
+
   useEffect(() => {
     const fetchIngredientsData = async () => {
       try {
         const response = await apiFetch("/api/raw-ingredients");
         if (!response.ok) {
-          throw new Error("Network response was not ok");
+          const errorData = await response.json();
+                
+          throw new Error(
+            errorData.error ||
+            errorData.message ||
+            "Request failed.",
+          );
         }
         const data = await response.json();
         setIngredients(data);
@@ -195,6 +231,17 @@ function RawIngredientsPage() {
                 >
                   Created At
                 </TableCell>
+                <TableCell
+                  align="center"
+                  sx={{
+                    color: "white",
+                    fontWeight: 700,
+                    backgroundColor: "primary.main",
+                    borderBottom: "1px solid #e0e0e0",
+                  }}
+                >
+                  Actions
+                </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -212,14 +259,33 @@ function RawIngredientsPage() {
                   >
                     {i.currentWeightKg.toFixed(2) + " kg"}
                   </TableCell>
-                  <TableCell align="center">
+                  <TableCell 
+                    align="center"
+                    sx={{ borderRight: "1px solid #e0e0e0" }}
+                  >
                     {new Date(i.createdAt).toLocaleDateString()}
+                  </TableCell>
+                  <TableCell align="center">
+                    <Button
+                      variant="outlined"
+                      onClick={() => handleOpenAdjustDialog(i)}
+                    >
+                      Adjust
+                    </Button>
                   </TableCell>
                 </TableRow>
               ))}
             </TableBody>
           </Table>
         </TableContainer>
+      )}
+      {selectedIngredient && (
+        <AdjustmentInventoryDialog
+          open={adjustDialogOpen}
+          ingredient={selectedIngredient}
+          onClose={handleCloseAdjustDialog}
+          onInventoryUpdated={handleInventoryUpdated}
+        />
       )}
     </Box>
   );

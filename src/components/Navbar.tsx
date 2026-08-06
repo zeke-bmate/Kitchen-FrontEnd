@@ -11,7 +11,7 @@ const pages = [{ label: "navbar.dashboard", path: '/sales-import', icon: HomeOut
                { label: 'navbar.orders', path: '/orders', icon: ReceiptOutlined, roles: ["Admin", "DeePlace", "Echo"]}, 
                { label: 'navbar.suppliers', path: '/suppliers', icon: LocalShipping, roles: ["Admin", "Echo"]},
                { label: 'navbar.purchases', path: '/purchases', icon: ShoppingCart, roles: ["Admin", "Echo"]},
-               { label: 'navbar.ingredients', path: '/raw-ingredients', icon: Inventory2Outlined, roles: ["Admin", "DeePlace", "Echo"]},
+               { label: 'navbar.ingredients', path: '/raw-ingredients', icon: Inventory2Outlined, roles: ["Admin", "Echo"]},
                { label: 'navbar.recipes', path: '/recipes', icon: MenuBook, roles: ["Admin", "DeePlace", "Echo"]},
                { label: 'navbar.production', path: '/production-batches', icon: LocalDining, roles: ["Admin", "Echo"]},
                { label: 'navbar.inventory', path: '/finished-inventory', icon: Warehouse, roles: ["Admin", "DeePlace", "Echo"]},
