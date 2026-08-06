@@ -1,0 +1,15 @@
+{
+  "navbar": {
+    "dashboard": "Dashboard",
+    "orders": "Orders",
+    "suppliers": "Suppliers",
+    "purchases": "Purchases",
+    "ingredients": "Raw Ingredients",
+    "recipes": "Recipes",
+    "production": "Production Batches",
+    "inventory": "Finished Inventory",
+    "users": "Users",
+    "logout": "Logout",
+    "language": "Language"
+  }
+}
