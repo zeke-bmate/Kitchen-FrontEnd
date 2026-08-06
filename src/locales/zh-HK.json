@@ -1,0 +1,14 @@
+{
+  "navbar": {
+    "dashboard": "首頁",
+    "orders": "訂單",
+    "suppliers": "供應商",
+    "purchases": "採購",
+    "ingredients": "原料",
+    "recipes": "食譜",
+    "production": "生產",
+    "inventory": "成品庫存",
+    "users": "使用者",
+    "logout": "登出"
+  }
+}

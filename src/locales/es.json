@@ -1,0 +1,14 @@
+{
+  "navbar": {
+    "dashboard": "Inicio",
+    "orders": "Pedidos",
+    "suppliers": "Proveedores",
+    "purchases": "Compras",
+    "ingredients": "Ingredientes",
+    "recipes": "Recetas",
+    "production": "Producción",
+    "inventory": "Inventario",
+    "users": "Usuarios",
+    "logout": "Cerrar sesión"
+  }
+}
