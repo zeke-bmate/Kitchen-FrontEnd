@@ -16,7 +16,7 @@ import {
   TextField,
   Autocomplete,
 } from "@mui/material";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import CloseIcon from "@mui/icons-material/Close";
 import type { Purchase } from "../types/purchase";
 import type { PurchaseItemInput } from "../types/purchaseItemInput";
@@ -33,6 +33,21 @@ type CreatePurchaseDialogProps = {
   rawIngredients: RawIngredient[];
 };
 
+const getPurchaseDraft = () => {
+  const savedDraft = localStorage.getItem("purchaseDraft");
+
+  if (!savedDraft) {
+    return null;
+  }
+
+  try {
+    return JSON.parse(savedDraft);
+  } catch {
+    localStorage.removeItem("purchaseDraft");
+    return null;
+  }
+};
+
 function CreatePurchaseDialog({
   open,
   onClose,
@@ -40,19 +55,24 @@ function CreatePurchaseDialog({
   suppliers,
   rawIngredients,
 }: CreatePurchaseDialogProps) {
-  const [supplierId, setSupplierId] = useState<string>("");
-  const [date, setDate] = useState<string>("");
+  const draft = getPurchaseDraft();
+  const [supplierId, setSupplierId] = useState<string>(draft?.supplierId ?? "");
+  const [date, setDate] = useState<string>(draft?.date ?? "");
   const [supplierError, setSupplierError] = useState<string | null>(null);
   const [dateError, setDateError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [purchaseItems, setPurchaseItems] = useState<PurchaseItemInput[]>([
-    {
-      orderUnits: "",
-      weightKg: 0,
-      pricePerKg: 0,
-    },
-  ]);
+  const [purchaseItems, setPurchaseItems] = useState<PurchaseItemInput[]>(
+    draft?.purchaseItems?.length
+      ? draft.purchaseItems
+      : [
+          {
+            orderUnits: "",
+            weightKg: 0,
+            pricePerKg: 0,
+          },
+        ]
+  );
   const [purchaseItemErrors, setPurchaseItemErrors] = useState<
     PurchaseItemError[]
   >([]);
@@ -102,6 +122,19 @@ function CreatePurchaseDialog({
     setDateError(null);
     setDate(event.target.value);
   };
+
+  useEffect(() => {
+    const draft = {
+      supplierId,
+      date,
+      purchaseItems,
+    };
+  
+    localStorage.setItem(
+      "purchaseDraft",
+      JSON.stringify(draft),
+    );
+  }, [supplierId, date, purchaseItems]);
 
   const handleIngredientChange = (
     index: number,
@@ -190,7 +223,7 @@ function CreatePurchaseDialog({
         weightKg: null,
         pricePerKg: null,
       };
-      const trimmedOrderUnits = purchaseItems[p].orderUnits.trim();
+      
       const weightKgNum = Number(purchaseItems[p].weightKg);
       const pricePerKgNum = Number(purchaseItems[p].pricePerKg);
       const rawIngredientId = purchaseItems[p].rawIngredientId;
@@ -203,10 +236,6 @@ function CreatePurchaseDialog({
         hasErrors = true;
       }
 
-      if (!trimmedOrderUnits) {
-        newErrors[p].orderUnits = "Order Units must be a non empty string.";
-        hasErrors = true;
-      }
       if (Number.isNaN(weightKgNum) || weightKgNum <= 0) {
         newErrors[p].weightKg =
           "Weight Kg must be a positive number greater than zero.";
@@ -257,6 +286,7 @@ function CreatePurchaseDialog({
       ]);
 
       setPurchaseItemErrors([]);
+      localStorage.removeItem("purchaseDraft");
     } catch (error) {
       if (error instanceof Error) {
         setFormError(error.message);
@@ -389,7 +419,7 @@ function CreatePurchaseDialog({
                 }
                 value={purchaseItem.orderUnits}
                 onChange={(event) => handleOrderUnitsChange(index, event)}
-                label="Order Units"
+                label="Order Units (optional)"
               />
               <TextField
                 type="Number"
