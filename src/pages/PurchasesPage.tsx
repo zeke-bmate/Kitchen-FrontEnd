@@ -15,6 +15,7 @@ import {
   Button,
 } from "@mui/material";
 import PurchaseDetailsDialog from "../components/PurchaseDetailsDialog";
+import type { RawIngredient } from "../types/rawIngredient";
 import CreatePurchaseDialog from "../components/CreatePurchaseDialog";
 import apiFetch from "../api/apiFetch";
 
@@ -33,6 +34,7 @@ function PurchasesPage() {
   );
   const [dialogOpen, setDialogOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [rawIngredients, setRawIngredients] = useState<RawIngredient[]>([]);
 
   const handlePurchaseClick = (purchase: Purchase) => {
     setSelectedPurchase(purchase);
@@ -103,6 +105,33 @@ function PurchasesPage() {
     };
 
     fetchSuppliersData();
+  }, []);
+
+  useEffect(() => {
+    const fetchRawIngredients = async () => {
+      try {
+        const response = await apiFetch("/api/raw-ingredients");
+
+        if (!response.ok) {
+          const errorData = await response.json();
+
+          throw new Error(
+            errorData.error ||
+            errorData.message ||
+            "Failed to fetch raw ingredients."
+          );
+        }
+
+        const data = await response.json();
+        setRawIngredients(data);
+      } catch (error) {
+        if (error instanceof Error) {
+          setError(error.message);
+        }
+      }
+    };
+
+    fetchRawIngredients();
   }, []);
 
   if (error) return <p>{error}</p>;
@@ -227,6 +256,7 @@ function PurchasesPage() {
           onClose={handleCreatePurchaseClose}
           onPurchaseCreated={handlePurchaseCreated}
           suppliers={suppliers}
+          rawIngredients={rawIngredients}
         />
       )}
     </Box>

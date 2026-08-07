@@ -1,6 +1,7 @@
 export type PurchaseItemInput = {
-    itemName: string;
-    orderUnits: string;
-    weightKg: number;
-    pricePerKg: number;
-}
+  rawIngredientId?: string;
+  newIngredientName?: string;
+  orderUnits: string;
+  weightKg: number;
+  pricePerKg: number;
+};

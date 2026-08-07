@@ -14,6 +14,7 @@ import {
   Select,
   Stack,
   TextField,
+  Autocomplete,
 } from "@mui/material";
 import { useState } from "react";
 import CloseIcon from "@mui/icons-material/Close";
@@ -21,6 +22,7 @@ import type { Purchase } from "../types/purchase";
 import type { PurchaseItemInput } from "../types/purchaseItemInput";
 import type { PurchaseItemError } from "../types/purchaseItemError";
 import type { Supplier } from "../types/supplier";
+import type { RawIngredient } from "../types/rawIngredient";
 import apiFetch from "../api/apiFetch";
 
 type CreatePurchaseDialogProps = {
@@ -28,6 +30,7 @@ type CreatePurchaseDialogProps = {
   onClose: () => void;
   onPurchaseCreated: (purchase: Purchase) => void;
   suppliers: Supplier[];
+  rawIngredients: RawIngredient[];
 };
 
 function CreatePurchaseDialog({
@@ -35,6 +38,7 @@ function CreatePurchaseDialog({
   onClose,
   onPurchaseCreated,
   suppliers,
+  rawIngredients,
 }: CreatePurchaseDialogProps) {
   const [supplierId, setSupplierId] = useState<string>("");
   const [date, setDate] = useState<string>("");
@@ -44,7 +48,6 @@ function CreatePurchaseDialog({
   const [submitting, setSubmitting] = useState(false);
   const [purchaseItems, setPurchaseItems] = useState<PurchaseItemInput[]>([
     {
-      itemName: "",
       orderUnits: "",
       weightKg: 0,
       pricePerKg: 0,
@@ -58,7 +61,6 @@ function CreatePurchaseDialog({
     setPurchaseItems((previousItems) => [
       ...previousItems,
       {
-        itemName: "",
         orderUnits: "",
         weightKg: 0,
         pricePerKg: 0,
@@ -71,12 +73,6 @@ function CreatePurchaseDialog({
       (_, index) => index !== indexToRemove,
     );
     setPurchaseItems(filteredItems);
-  };
-
-  const handleItemNameChange = (index, event) => {
-    const updatedItems = [...purchaseItems];
-    updatedItems[index].itemName = event.target.value;
-    setPurchaseItems(updatedItems);
   };
 
   const handleOrderUnitsChange = (index, event) => {
@@ -105,6 +101,61 @@ function CreatePurchaseDialog({
   const handleDateChange = (event) => {
     setDateError(null);
     setDate(event.target.value);
+  };
+
+  const handleIngredientChange = (
+    index: number,
+    value: RawIngredient | string | null,
+  ) => {
+    setPurchaseItems((previousItems) =>
+      previousItems.map((item, itemIndex) => {
+        if (itemIndex !== index) {
+          return item;
+        }
+      
+        if (typeof value === "string") {
+          const normalizedValue = value.trim().toLowerCase();
+        
+          const existingIngredient = rawIngredients.find(
+            (ingredient) =>
+              ingredient.name.trim().toLowerCase() === normalizedValue,
+          );
+        
+          if (existingIngredient) {
+            const { newIngredientName, ...rest } = item;
+          
+            return {
+              ...rest,
+              rawIngredientId: existingIngredient.id,
+            };
+          }
+        
+          const { rawIngredientId, ...rest } = item;
+        
+          return {
+            ...rest,
+            newIngredientName: value,
+          };
+        }
+      
+        if (value) {
+          const { newIngredientName, ...rest } = item;
+        
+          return {
+            ...rest,
+            rawIngredientId: value.id,
+          };
+        }
+      
+        const {
+          rawIngredientId,
+          newIngredientName,
+          ...rest
+        } = item;
+      
+        return rest;
+      }),
+    );
   };
 
   const handleSubmit = async (event) => {
@@ -139,15 +190,19 @@ function CreatePurchaseDialog({
         weightKg: null,
         pricePerKg: null,
       };
-      const trimmedItemName = purchaseItems[p].itemName.trim();
       const trimmedOrderUnits = purchaseItems[p].orderUnits.trim();
       const weightKgNum = Number(purchaseItems[p].weightKg);
       const pricePerKgNum = Number(purchaseItems[p].pricePerKg);
+      const rawIngredientId = purchaseItems[p].rawIngredientId;
+      const newIngredientName =
+        purchaseItems[p].newIngredientName?.trim();
 
-      if (!trimmedItemName) {
-        newErrors[p].itemName = "Item Name must be a non empty string.";
+      if (!rawIngredientId && !newIngredientName) {
+        newErrors[p].itemName =
+          "Select an existing ingredient or enter a new ingredient.";
         hasErrors = true;
       }
+
       if (!trimmedOrderUnits) {
         newErrors[p].orderUnits = "Order Units must be a non empty string.";
         hasErrors = true;
@@ -195,7 +250,6 @@ function CreatePurchaseDialog({
       setDate("");
       setPurchaseItems([
         {
-          itemName: "",
           orderUnits: "",
           weightKg: 0,
           pricePerKg: 0,
@@ -290,16 +344,41 @@ function CreatePurchaseDialog({
                 alignItems: "flex-start",
               }}
             >
-              <TextField
-                error={!!purchaseItemErrors[index]?.itemName}
-                helperText={
-                  purchaseItemErrors[index]?.itemName
-                    ? purchaseItemErrors[index]?.itemName
-                    : ""
+              <Autocomplete
+                freeSolo
+                options={rawIngredients}
+                sx={{ minWidth: 250 }}
+                getOptionLabel={(option) =>
+                  typeof option === "string"
+                    ? option
+                    : option.name
                 }
-                value={purchaseItem.itemName}
-                onChange={(event) => handleItemNameChange(index, event)}
-                label="Item Name"
+                value={
+                  purchaseItem.rawIngredientId
+                    ? rawIngredients.find(
+                        (ingredient) =>
+                          ingredient.id === purchaseItem.rawIngredientId,
+                      ) ?? null
+                    : purchaseItem.newIngredientName ?? null
+                }
+                onChange={(_, value) =>
+                  handleIngredientChange(index, value)
+                }
+                onInputChange={(_, value, reason) => {
+                  if (reason === "input") {
+                    handleIngredientChange(index, value);
+                  }
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label="Ingredient"
+                    error={!!purchaseItemErrors[index]?.itemName}
+                    helperText={
+                      purchaseItemErrors[index]?.itemName ?? ""
+                    }
+                  />
+                )}
               />
               <TextField
                 error={!!purchaseItemErrors[index]?.orderUnits}
