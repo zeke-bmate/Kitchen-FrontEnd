@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 import apiFetch from "../api/apiFetch.ts";
 import AdjustmentInventoryDialog from "../components/AdjustmentInventoryDialog.tsx";
+import InventoryHistoryDialog from "../components/InventoryHistoryDialog.tsx";
 
 function RawIngredientsPage() {
   const [ingredients, setIngredients] = useState<RawIngredient[]>([]);
@@ -31,6 +32,8 @@ function RawIngredientsPage() {
   const [weightError, setWeightError] = useState<string | null>(null);
   const [selectedIngredient, setSelectedIngredient] = useState<RawIngredient | null>(null);
   const [adjustDialogOpen, setAdjustDialogOpen] = useState(false);
+  const [historyIngredient, setHistoryIngredient] = useState<RawIngredient | null>(null);
+  const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
 
   const handleNameChange = (event) => {
     setName(event.target.value);
@@ -38,6 +41,18 @@ function RawIngredientsPage() {
 
   const handleWeightChange = (event) => {
     setCurrentWeightKg(event.target.value);
+  };
+
+  const handleOpenHistoryDialog = (
+    ingredient: RawIngredient
+  ) => {
+    setHistoryIngredient(ingredient);
+    setHistoryDialogOpen(true);
+  };
+  
+  const handleCloseHistoryDialog = () => {
+    setHistoryDialogOpen(false);
+    setHistoryIngredient(null);
   };
 
   const handleSubmit = async (event) => {
@@ -246,7 +261,14 @@ function RawIngredientsPage() {
             </TableHead>
             <TableBody>
               {ingredients.map((i) => (
-                <TableRow key={i.id} hover>
+                <TableRow 
+                  key={i.id}
+                  hover
+                  onClick={() => handleOpenHistoryDialog(i)}
+                  sx={{
+                    cursor: "pointer",
+                  }}
+                >
                   <TableCell
                     align="center"
                     sx={{ borderRight: "1px solid #e0e0e0" }}
@@ -268,7 +290,10 @@ function RawIngredientsPage() {
                   <TableCell align="center">
                     <Button
                       variant="outlined"
-                      onClick={() => handleOpenAdjustDialog(i)}
+                      onClick={(event) => {
+                        event.stopPropagation();
+                        handleOpenAdjustDialog(i);
+                      }}
                     >
                       Adjust
                     </Button>
@@ -287,6 +312,12 @@ function RawIngredientsPage() {
           onInventoryUpdated={handleInventoryUpdated}
         />
       )}
+
+      <InventoryHistoryDialog
+        open={historyDialogOpen}
+        ingredient={historyIngredient}
+        onClose={handleCloseHistoryDialog}
+      />
     </Box>
   );
 }
