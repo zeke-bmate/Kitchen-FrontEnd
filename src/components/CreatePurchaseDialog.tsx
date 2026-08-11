@@ -439,6 +439,9 @@ function CreatePurchaseDialog({
                 onChange={(event) => handleWeightChange(index, event)}
                 label="Weight"
                 slotProps={{
+                  htmlInput: {
+                    step: "any",
+                  },
                   input: {
                     endAdornment: (
                       <InputAdornment position="end">kg</InputAdornment>
@@ -458,6 +461,9 @@ function CreatePurchaseDialog({
                 onChange={(event) => handleTotalPriceChange(index, event)}
                 label="Total Price"
                 slotProps={{
+                  htmlInput: {
+                    step: "any",
+                  },
                   input: {
                     endAdornment: (
                       <InputAdornment position="start">$</InputAdornment>
