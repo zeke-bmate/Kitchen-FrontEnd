@@ -67,7 +67,7 @@ function PurchaseDetailsDialog({
                                 <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>{i.itemName}</TableCell>
                                 <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>{i.orderUnits}</TableCell>
                                 <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>{i.weightKg}</TableCell>
-                                <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>{i.pricePerKg}</TableCell>
+                                <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>${i.pricePerKg}</TableCell>
                                 <TableCell align="center" >${i.totalPrice.toFixed(2)}</TableCell>
                             </TableRow>
                             ))
