@@ -68,8 +68,8 @@ function CreatePurchaseDialog({
       : [
           {
             orderUnits: "",
-            weightKg: 0,
-            pricePerKg: 0,
+            weightKg: "",
+            totalPrice: "",
           },
         ]
   );
@@ -82,8 +82,8 @@ function CreatePurchaseDialog({
       ...previousItems,
       {
         orderUnits: "",
-        weightKg: 0,
-        pricePerKg: 0,
+        weightKg: "",
+        totalPrice: "",
       },
     ]);
   };
@@ -103,13 +103,13 @@ function CreatePurchaseDialog({
 
   const handleWeightChange = (index, event) => {
     const updatedItems = [...purchaseItems];
-    updatedItems[index].weightKg = Number(event.target.value);
+    updatedItems[index].weightKg = event.target.value;
     setPurchaseItems(updatedItems);
   };
 
-  const handlePriceChange = (index, event) => {
+  const handleTotalPriceChange = (index, event) => {
     const updatedItems = [...purchaseItems];
-    updatedItems[index].pricePerKg = Number(event.target.value);
+    updatedItems[index].totalPrice = event.target.value;
     setPurchaseItems(updatedItems);
   };
 
@@ -211,7 +211,7 @@ function CreatePurchaseDialog({
         itemName: null,
         orderUnits: null,
         weightKg: null,
-        pricePerKg: null,
+        totalPrice: null,
       },
     ];
     let hasErrors = false;
@@ -221,11 +221,11 @@ function CreatePurchaseDialog({
         itemName: null,
         orderUnits: null,
         weightKg: null,
-        pricePerKg: null,
+        totalPrice: null,
       };
       
       const weightKgNum = Number(purchaseItems[p].weightKg);
-      const pricePerKgNum = Number(purchaseItems[p].pricePerKg);
+      const totalPriceNum = Number(purchaseItems[p].totalPrice);
       const rawIngredientId = purchaseItems[p].rawIngredientId;
       const newIngredientName =
         purchaseItems[p].newIngredientName?.trim();
@@ -241,9 +241,9 @@ function CreatePurchaseDialog({
           "Weight Kg must be a positive number greater than zero.";
         hasErrors = true;
       }
-      if (Number.isNaN(pricePerKgNum) || pricePerKgNum <= 0) {
-        newErrors[p].pricePerKg =
-          "Price per Kg must be a positive number greater than zero.";
+      if (Number.isNaN(totalPriceNum) || totalPriceNum <= 0) {
+        newErrors[p].totalPrice =
+          "Total price must be a positive number greater than zero.";
         hasErrors = true;
       }
     }
@@ -253,11 +253,17 @@ function CreatePurchaseDialog({
     }
 
     setSubmitting(true);
+
     const data = {
       supplierId: trimmedSupplierId,
-      date: date,
-      items: purchaseItems,
+      date,
+      items: purchaseItems.map((item) => ({
+        ...item,
+        weightKg: Number(item.weightKg),
+        totalPrice: Number(item.totalPrice),
+      })),
     };
+
     try {
       const response = await apiFetch("/api/purchases", {
         method: "POST",
@@ -280,8 +286,8 @@ function CreatePurchaseDialog({
       setPurchaseItems([
         {
           orderUnits: "",
-          weightKg: 0,
-          pricePerKg: 0,
+          weightKg: "",
+          totalPrice: "",
         },
       ]);
 
@@ -422,7 +428,7 @@ function CreatePurchaseDialog({
                 label="Order Units (optional)"
               />
               <TextField
-                type="Number"
+                type="number"
                 error={!!purchaseItemErrors[index]?.weightKg}
                 helperText={
                   purchaseItemErrors[index]?.weightKg
@@ -441,16 +447,16 @@ function CreatePurchaseDialog({
                 }}
               />
               <TextField
-                type="Number"
-                error={!!purchaseItemErrors[index]?.pricePerKg}
+                type="number"
+                error={!!purchaseItemErrors[index]?.totalPrice}
                 helperText={
-                  purchaseItemErrors[index]?.pricePerKg
-                    ? purchaseItemErrors[index]?.pricePerKg
+                  purchaseItemErrors[index]?.totalPrice
+                    ? purchaseItemErrors[index]?.totalPrice
                     : ""
                 }
-                value={purchaseItem.pricePerKg}
-                onChange={(event) => handlePriceChange(index, event)}
-                label="Price per Kg"
+                value={purchaseItem.totalPrice}
+                onChange={(event) => handleTotalPriceChange(index, event)}
+                label="Total Price"
                 slotProps={{
                   input: {
                     endAdornment: (
