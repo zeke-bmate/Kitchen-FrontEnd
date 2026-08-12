@@ -8,9 +8,9 @@ export type InventoryTransaction = {
   id: string;
   rawIngredientId: string;
   type: InventoryTransactionType;
-  quantityChangeKg: number;
-  previousWeightKg: number;
-  newWeightKg: number;
+  quantityChange: number;
+  previousQuantity: number;
+  newQuantity: number;
   reason: string | null;
   purchaseId: string | null;
   productionBatchId: string | null;

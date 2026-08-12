@@ -1,6 +1,23 @@
 import { Dialog, DialogTitle, DialogContent, Typography, Divider, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Box, Stack } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 
+const formatUnit = (unit) => {
+  switch (unit) {
+    case "KG":
+      return "kg";
+    case "L":
+      return "L";
+    case "EACH":
+      return "each";
+    case "BUNCH":
+      return "bunch";
+    case "HEAD":
+      return "head";
+    default:
+      return "";
+  }
+};
+
 function PurchaseDetailsDialog({
     selectedPurchase,
     open,
@@ -56,8 +73,8 @@ function PurchaseDetailsDialog({
                         <TableRow>
                             <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'}}>Item</TableCell>
                             <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>Order Units</TableCell>
-                            <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>Weight</TableCell>
-                            <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>Price/kg</TableCell>
+                            <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>Quantity</TableCell>
+                            <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>Price/ Unit</TableCell>
                             <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>Total</TableCell>
                         </TableRow>
                     </TableHead>
@@ -65,9 +82,12 @@ function PurchaseDetailsDialog({
                         { selectedPurchase.items.map((i) => (
                             <TableRow key={i.id} hover>
                                 <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>{i.itemName}</TableCell>
-                                <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>{i.orderUnits}</TableCell>
-                                <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>{i.weightKg}</TableCell>
-                                <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>${i.pricePerKg}</TableCell>
+                                <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>{i.orderUnits || "—"}</TableCell>
+                                <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>{i.quantity}{" "}
+                                                                                                        {i.rawIngredient
+                                                                                                          ? formatUnit(i.rawIngredient.canonicalUnit)
+                                                                                                          : ""}</TableCell>
+                                <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>${i.pricePerUnit.toFixed(2)}</TableCell>
                                 <TableCell align="center" >${i.totalPrice.toFixed(2)}</TableCell>
                             </TableRow>
                             ))

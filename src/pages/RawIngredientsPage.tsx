@@ -11,25 +11,46 @@ import Box from "@mui/material/Box";
 import {
   Alert,
   Button,
-  InputAdornment,
   Stack,
   TextField,
   Typography,
+  FormControl,
+  InputLabel,
+  MenuItem,
+  Select,
+  FormHelperText,
 } from "@mui/material";
 import apiFetch from "../api/apiFetch.ts";
 import AdjustmentInventoryDialog from "../components/AdjustmentInventoryDialog.tsx";
 import InventoryHistoryDialog from "../components/InventoryHistoryDialog.tsx";
+import type { MeasurementUnit } from "../types/measurementUnit";
+
+const formatUnit = (unit: MeasurementUnit) => {
+  switch (unit) {
+    case "KG":
+      return "kg";
+    case "L":
+      return "L";
+    case "EACH":
+      return "each";
+    case "BUNCH":
+      return "bunch";
+    case "HEAD":
+      return "head";
+  }
+};
 
 function RawIngredientsPage() {
   const [ingredients, setIngredients] = useState<RawIngredient[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [name, setName] = useState<string | null>("");
-  const [currentWeightKg, setCurrentWeightKg] = useState<string | null>(null);
+  const [name, setName] = useState<string>("");
   const [submitting, setSubmitting] = useState(false);
+  const [currentQuantity, setCurrentQuantity] = useState<string>("");
+  const [canonicalUnit, setCanonicalUnit] = useState<MeasurementUnit>("KG");
+  const [quantityError, setQuantityError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [nameError, setNameError] = useState<string | null>(null);
-  const [weightError, setWeightError] = useState<string | null>(null);
   const [selectedIngredient, setSelectedIngredient] = useState<RawIngredient | null>(null);
   const [adjustDialogOpen, setAdjustDialogOpen] = useState(false);
   const [historyIngredient, setHistoryIngredient] = useState<RawIngredient | null>(null);
@@ -39,8 +60,12 @@ function RawIngredientsPage() {
     setName(event.target.value);
   };
 
-  const handleWeightChange = (event) => {
-    setCurrentWeightKg(event.target.value);
+  const handleQuantityChange = (event) => { 
+    setCurrentQuantity(event.target.value); 
+  }
+
+  const handleUnitChange = (event) => {
+    setCanonicalUnit(event.target.value as MeasurementUnit);
   };
 
   const handleOpenHistoryDialog = (
@@ -58,20 +83,29 @@ function RawIngredientsPage() {
   const handleSubmit = async (event) => {
     event.preventDefault();
     const trimmedName = name.trim();
-    const currentWeightKgNum = Number(currentWeightKg);
+    const currentQuantityNum = Number(currentQuantity);
     setNameError(null);
-    setWeightError(null);
+    setQuantityError(null);
     setFormError(null);
     if (!trimmedName) {
       setNameError("Name must be a non empty string.");
       return;
     }
-    if (!currentWeightKgNum || currentWeightKgNum < 0) {
-      setWeightError("Current Weight must be a non-negative number.");
+    if (
+      Number.isNaN(currentQuantityNum) ||
+      currentQuantityNum < 0
+    ) {
+      setQuantityError(
+        "Current quantity must be a non-negative number."
+      );
       return;
     }
     setSubmitting(true);
-    const data = { name: trimmedName, currentWeightKg: currentWeightKgNum };
+    const data = {
+      name: trimmedName,
+      currentQuantity: currentQuantityNum,
+      canonicalUnit,
+    };
     try {
       const response = await apiFetch("/api/raw-ingredients", {
         method: "POST",
@@ -93,7 +127,8 @@ function RawIngredientsPage() {
         createdIngredient,
       ]);
       setName("");
-      setCurrentWeightKg("");
+      setCurrentQuantity("");
+      setCanonicalUnit("KG");
     } catch (error) {
       if (error instanceof Error) {
         setFormError(error.message);
@@ -169,7 +204,7 @@ function RawIngredientsPage() {
         Raw Ingredients
       </Typography>
       <Typography variant="body1" sx={{ mb: 3 }}>
-        Track current raw inventory by weight.
+        Track current raw inventory by canonical unit.
       </Typography>
       <form onSubmit={handleSubmit}>
         <Stack direction="row" spacing={5} sx={{ mb: 3 }}>
@@ -181,20 +216,36 @@ function RawIngredientsPage() {
             onChange={handleNameChange}
           />
           <TextField
-            type="Number"
-            error={!!weightError}
-            helperText={weightError ? weightError : ""}
-            label="Weight"
-            value={currentWeightKg}
+            type="number"
+            error={!!quantityError}
+            helperText={quantityError ?? ""}
+            label="Quantity"
+            value={currentQuantity}
+            onChange={handleQuantityChange}
             slotProps={{
-              input: {
-                endAdornment: (
-                  <InputAdornment position="end">kg</InputAdornment>
-                ),
+              htmlInput: {
+                step: "any",
               },
             }}
-            onChange={handleWeightChange}
           />
+          <FormControl sx={{ minWidth: 120 }}>
+            <InputLabel id="unit-select-label">
+              Unit
+            </InputLabel>
+
+            <Select
+              labelId="unit-select-label"
+              value={canonicalUnit}
+              label="Unit"
+              onChange={handleUnitChange}
+            >
+              <MenuItem value="KG">kg</MenuItem>
+              <MenuItem value="L">L</MenuItem>
+              <MenuItem value="EACH">each</MenuItem>
+              <MenuItem value="BUNCH">bunch</MenuItem>
+              <MenuItem value="HEAD">head</MenuItem>
+            </Select>
+          </FormControl>
           <Button type="submit" variant="contained" disabled={submitting}>
             {submitting ? "Adding..." : "Submit"}
           </Button>
@@ -233,7 +284,7 @@ function RawIngredientsPage() {
                     borderBottom: "1px solid #e0e0e0",
                   }}
                 >
-                  Current Weight (Kg)
+                  Current Quantity
                 </TableCell>
                 <TableCell
                   align="center"
@@ -279,7 +330,7 @@ function RawIngredientsPage() {
                     align="center"
                     sx={{ borderRight: "1px solid #e0e0e0" }}
                   >
-                    {i.currentWeightKg.toFixed(2) + " kg"}
+                    {i.currentQuantity.toFixed(2)} {formatUnit(i.canonicalUnit)}
                   </TableCell>
                   <TableCell 
                     align="center"

@@ -22,6 +22,22 @@ import type { RawIngredient } from "../types/rawIngredient";
 import type { InventoryTransaction } from "../types/inventoryTransaction";
 import apiFetch from "../api/apiFetch";
 import CloseIcon from '@mui/icons-material/Close';
+import type { MeasurementUnit } from "../types/measurementUnit";
+
+const formatUnit = (unit: MeasurementUnit) => {
+  switch (unit) {
+    case "KG":
+      return "kg";
+    case "L":
+      return "L";
+    case "EACH":
+      return "each";
+    case "BUNCH":
+      return "bunch";
+    case "HEAD":
+      return "head";
+  }
+};
 
 type InventoryHistoryDialogProps = {
   open: boolean;
@@ -62,8 +78,8 @@ function InventoryHistoryDialog({
   ingredient,
   onClose,
 }: InventoryHistoryDialogProps) {
-  const [transactions, setTransactions] =
-    useState<InventoryTransaction[]>([]);
+
+  const [transactions, setTransactions] = useState<InventoryTransaction[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -73,6 +89,7 @@ function InventoryHistoryDialog({
     }
 
     const fetchHistory = async () => {
+      setTransactions([]);
       setIsLoading(true);
       setError(null);
 
@@ -106,12 +123,16 @@ function InventoryHistoryDialog({
     fetchHistory();
   }, [open, ingredient]);
 
-  const formatChange = (change: number) => {
-    if (change > 0) {
-      return `+${change.toFixed(2)} kg`;
-    }
+  const formatChange = (
+    change: number,
+    unit: MeasurementUnit
+  ) => {
+    const formattedChange =
+      change > 0
+        ? `+${change.toFixed(2)}`
+        : change.toFixed(2);
 
-    return `${change.toFixed(2)} kg`;
+    return `${formattedChange} ${formatUnit(unit)}`;
   };
 
   return (
@@ -156,7 +177,9 @@ function InventoryHistoryDialog({
               }}
           >
             <Typography sx={{ mb: 2 }}>
-              <strong>Current inventory: </strong>{ingredient.currentWeightKg.toFixed(2)} kg
+              <strong>Current inventory: </strong>
+              {ingredient.currentQuantity.toFixed(2)}{" "}
+              {formatUnit(ingredient.canonicalUnit)}
             </Typography>
           </Box>
           </Stack>
@@ -198,15 +221,21 @@ function InventoryHistoryDialog({
                     <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>{transaction.type}</TableCell>
 
                     <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>
-                      {formatChange(transaction.quantityChangeKg)}
+                      {ingredient &&
+                        formatChange(
+                          transaction.quantityChange,
+                          ingredient.canonicalUnit
+                        )}
                     </TableCell>
 
                     <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>
-                      {transaction.previousWeightKg.toFixed(2)} kg
+                      {transaction.previousQuantity.toFixed(2)}{" "}
+                      {ingredient && formatUnit(ingredient.canonicalUnit)}
                     </TableCell>
 
                     <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>
-                      {transaction.newWeightKg.toFixed(2)} kg
+                      {transaction.newQuantity.toFixed(2)}{" "}
+                      {ingredient && formatUnit(ingredient.canonicalUnit)}
                     </TableCell>
 
                     <TableCell align="center">

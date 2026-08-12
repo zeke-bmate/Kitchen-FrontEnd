@@ -1,4 +1,4 @@
 export type RecipeIngredientInput = {
-    rawIngredientId: string;
-    weightKg: number;
-}
+  rawIngredientId: string;
+  quantity: string;
+};
