@@ -1,4 +1,4 @@
 export type IngredientError = {
-    rawIngredientId: string | null;
-    weightKg: string | null,
-}
+  rawIngredientId: string | null;
+  quantity: string | null;
+};

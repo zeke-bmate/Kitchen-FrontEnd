@@ -24,6 +24,22 @@ import type { PurchaseItemError } from "../types/purchaseItemError";
 import type { Supplier } from "../types/supplier";
 import type { RawIngredient } from "../types/rawIngredient";
 import apiFetch from "../api/apiFetch";
+import type { MeasurementUnit } from "../types/measurementUnit";
+
+const formatUnit = (unit: MeasurementUnit) => {
+  switch (unit) {
+    case "KG":
+      return "kg";
+    case "L":
+      return "L";
+    case "EACH":
+      return "each";
+    case "BUNCH":
+      return "bunch";
+    case "HEAD":
+      return "head";
+  }
+};
 
 type CreatePurchaseDialogProps = {
   open: boolean;
@@ -68,7 +84,7 @@ function CreatePurchaseDialog({
       : [
           {
             orderUnits: "",
-            weightKg: "",
+            quantity: "",
             totalPrice: "",
           },
         ]
@@ -82,7 +98,7 @@ function CreatePurchaseDialog({
       ...previousItems,
       {
         orderUnits: "",
-        weightKg: "",
+        quantity: "",
         totalPrice: "",
       },
     ]);
@@ -101,9 +117,9 @@ function CreatePurchaseDialog({
     setPurchaseItems(updatedItems);
   };
 
-  const handleWeightChange = (index, event) => {
+  const handleQuantityChange = (index, event) => {
     const updatedItems = [...purchaseItems];
-    updatedItems[index].weightKg = event.target.value;
+    updatedItems[index].quantity = event.target.value;
     setPurchaseItems(updatedItems);
   };
 
@@ -121,6 +137,22 @@ function CreatePurchaseDialog({
   const handleDateChange = (event) => {
     setDateError(null);
     setDate(event.target.value);
+  };
+
+  const handleCanonicalUnitChange = (
+    index: number,
+    unit: MeasurementUnit,
+  ) => {
+    setPurchaseItems((previousItems) =>
+      previousItems.map((item, itemIndex) =>
+        itemIndex === index
+          ? {
+              ...item,
+              canonicalUnit: unit,
+            }
+          : item
+      )
+    );
   };
 
   useEffect(() => {
@@ -155,7 +187,11 @@ function CreatePurchaseDialog({
           );
         
           if (existingIngredient) {
-            const { newIngredientName, ...rest } = item;
+            const {
+              newIngredientName,
+              canonicalUnit,
+              ...rest
+            } = item;
           
             return {
               ...rest,
@@ -168,11 +204,16 @@ function CreatePurchaseDialog({
           return {
             ...rest,
             newIngredientName: value,
+            canonicalUnit: item.canonicalUnit ?? "KG",
           };
         }
       
         if (value) {
-          const { newIngredientName, ...rest } = item;
+          const {
+            newIngredientName,
+            canonicalUnit,
+            ...rest
+          } = item;
         
           return {
             ...rest,
@@ -183,6 +224,7 @@ function CreatePurchaseDialog({
         const {
           rawIngredientId,
           newIngredientName,
+          canonicalUnit,
           ...rest
         } = item;
       
@@ -210,7 +252,7 @@ function CreatePurchaseDialog({
       {
         itemName: null,
         orderUnits: null,
-        weightKg: null,
+        quantity: null,
         totalPrice: null,
       },
     ];
@@ -220,11 +262,11 @@ function CreatePurchaseDialog({
       newErrors[p] = {
         itemName: null,
         orderUnits: null,
-        weightKg: null,
+        quantity: null,
         totalPrice: null,
       };
       
-      const weightKgNum = Number(purchaseItems[p].weightKg);
+      const quantityNum = Number(purchaseItems[p].quantity);
       const totalPriceNum = Number(purchaseItems[p].totalPrice);
       const rawIngredientId = purchaseItems[p].rawIngredientId;
       const newIngredientName =
@@ -236,9 +278,9 @@ function CreatePurchaseDialog({
         hasErrors = true;
       }
 
-      if (Number.isNaN(weightKgNum) || weightKgNum <= 0) {
-        newErrors[p].weightKg =
-          "Weight Kg must be a positive number greater than zero.";
+      if (Number.isNaN(quantityNum) || quantityNum <= 0) {
+        newErrors[p].quantity =
+          "Quantity must be a positive number greater than zero.";
         hasErrors = true;
       }
       if (Number.isNaN(totalPriceNum) || totalPriceNum <= 0) {
@@ -259,7 +301,7 @@ function CreatePurchaseDialog({
       date,
       items: purchaseItems.map((item) => ({
         ...item,
-        weightKg: Number(item.weightKg),
+        quantity: Number(item.quantity),
         totalPrice: Number(item.totalPrice),
       })),
     };
@@ -286,7 +328,7 @@ function CreatePurchaseDialog({
       setPurchaseItems([
         {
           orderUnits: "",
-          weightKg: "",
+          quantity: "",
           totalPrice: "",
         },
       ]);
@@ -416,6 +458,29 @@ function CreatePurchaseDialog({
                   />
                 )}
               />
+              {purchaseItem.newIngredientName &&
+                !purchaseItem.rawIngredientId && (
+                  <FormControl sx={{ minWidth: 120 }}>
+                    <InputLabel>Unit</InputLabel>
+                
+                    <Select
+                      value={purchaseItem.canonicalUnit ?? "KG"}
+                      label="Unit"
+                      onChange={(event) =>
+                        handleCanonicalUnitChange(
+                          index,
+                          event.target.value as MeasurementUnit
+                        )
+                      }
+                    >
+                      <MenuItem value="KG">kg</MenuItem>
+                      <MenuItem value="L">L</MenuItem>
+                      <MenuItem value="EACH">each</MenuItem>
+                      <MenuItem value="BUNCH">bunch</MenuItem>
+                      <MenuItem value="HEAD">head</MenuItem>
+                    </Select>
+                  </FormControl>
+                )}
               <TextField
                 error={!!purchaseItemErrors[index]?.orderUnits}
                 helperText={
@@ -429,22 +494,34 @@ function CreatePurchaseDialog({
               />
               <TextField
                 type="number"
-                error={!!purchaseItemErrors[index]?.weightKg}
+                error={!!purchaseItemErrors[index]?.quantity}
                 helperText={
-                  purchaseItemErrors[index]?.weightKg
-                    ? purchaseItemErrors[index]?.weightKg
-                    : ""
+                  purchaseItemErrors[index]?.quantity ?? ""
                 }
-                value={purchaseItem.weightKg}
-                onChange={(event) => handleWeightChange(index, event)}
-                label="Weight"
+                value={purchaseItem.quantity}
+                onChange={(event) =>
+                  handleQuantityChange(index, event)
+                }
+                label="Quantity"
                 slotProps={{
                   htmlInput: {
                     step: "any",
                   },
                   input: {
                     endAdornment: (
-                      <InputAdornment position="end">kg</InputAdornment>
+                      <InputAdornment position="end">
+                        {purchaseItem.rawIngredientId
+                          ? formatUnit(
+                              rawIngredients.find(
+                                (ingredient) =>
+                                  ingredient.id ===
+                                  purchaseItem.rawIngredientId
+                              )?.canonicalUnit ?? "KG"
+                            )
+                          : purchaseItem.canonicalUnit
+                            ? formatUnit(purchaseItem.canonicalUnit)
+                            : ""}
+                      </InputAdornment>
                     ),
                   },
                 }}

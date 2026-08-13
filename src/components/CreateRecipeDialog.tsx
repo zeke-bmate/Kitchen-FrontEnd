@@ -23,6 +23,22 @@ import type { RawIngredient } from "../types/rawIngredient";
 import type { Recipe } from "../types/recipe";
 import type { IngredientError } from "../types/ingredientError";
 import apiFetch from "../api/apiFetch";
+import type { MeasurementUnit } from "../types/measurementUnit";
+
+const formatUnit = (unit: MeasurementUnit) => {
+  switch (unit) {
+    case "KG":
+      return "kg";
+    case "L":
+      return "L";
+    case "EACH":
+      return "each";
+    case "BUNCH":
+      return "bunch";
+    case "HEAD":
+      return "head";
+  }
+};
 
 type CreateRecipeDialogProps = {
   open: boolean;
@@ -47,7 +63,7 @@ function CreateRecipeDialog({
   const [ingredients, setIngredients] = useState<RecipeIngredientInput[]>([
     {
       rawIngredientId: "",
-      weightKg: 0,
+      quantity: "",
     },
   ]);
   const [ingredientErrors, setIngredientErrors] = useState<IngredientError[]>(
@@ -82,7 +98,7 @@ function CreateRecipeDialog({
       ...previousIngredients,
       {
         rawIngredientId: "",
-        weightKg: 0,
+        quantity: "",
       },
     ]);
   };
@@ -100,9 +116,9 @@ function CreateRecipeDialog({
     setIngredients(updatedIngredients);
   };
 
-  const handleWeightChange = (index, event) => {
+  const handleQuantityChange = (index, event) => {
     const updatedIngredients = [...ingredients];
-    updatedIngredients[index].weightKg = Number(event.target.value);
+    updatedIngredients[index].quantity = event.target.value;
     setIngredients(updatedIngredients);
   };
 
@@ -134,25 +150,25 @@ function CreateRecipeDialog({
     const newErrors = [
       {
         rawIngredientId: null,
-        weightKg: null,
+        quantity: null,
       },
     ];
     let hasErrors = false;
     for (const i in ingredients) {
       newErrors[i] = {
         rawIngredientId: null,
-        weightKg: null,
+        quantity: null,
       };
       const trimmedIngredientId = ingredients[i].rawIngredientId.trim();
-      const weightKgNum = Number(ingredients[i].weightKg);
+      const quantityNum  = Number(ingredients[i].quantity);
       if (!trimmedIngredientId) {
         newErrors[i].rawIngredientId =
           "Raw Ingredient ID must be a non empty string.";
         hasErrors = true;
       }
-      if (Number.isNaN(weightKgNum) || weightKgNum <= 0) {
-        newErrors[i].weightKg =
-          "Weight Kg must be a positive number greater than zero.";
+      if (Number.isNaN(quantityNum) || quantityNum <= 0) {
+        newErrors[i].quantity =
+          "Quantity must be a positive number greater than zero.";
         hasErrors = true;
       }
     }
@@ -165,7 +181,10 @@ function CreateRecipeDialog({
     const data = {
       name: trimmedName,
       servings: servingsNum,
-      ingredients: ingredients,
+      ingredients: ingredients.map((ingredient) => ({
+      rawIngredientId: ingredient.rawIngredientId,
+      quantity: Number(ingredient.quantity),
+      })),
     };
     try {
       const response = await apiFetch("/api/recipes", {
@@ -189,7 +208,7 @@ function CreateRecipeDialog({
       setIngredients([
         {
           rawIngredientId: "",
-          weightKg: 0,
+          quantity: "",
         },
       ]);
       setIngredientErrors([]);
@@ -247,7 +266,7 @@ function CreateRecipeDialog({
               color="text.secondary"
               sx={{ mb: 2 }}
             >
-              Purchase Information
+              Recipe Information
             </Typography>
             <Stack direction="row" spacing={3}>
               <TextField
@@ -273,7 +292,13 @@ function CreateRecipeDialog({
               />
             </Stack>
           </Box>
-          {ingredients.map((ingredient, index) => (
+          {ingredients.map((ingredient, index) => {
+            const selectedRawIngredient = rawIngredients.find(
+              (rawIngredient) =>
+                rawIngredient.id === ingredient.rawIngredientId
+            );
+
+            return (
             <Box
               key={index}
               sx={{
@@ -329,21 +354,24 @@ function CreateRecipeDialog({
                   )}
                 </FormControl>
                 <TextField
-                  type="Number"
-                  error={!!ingredientErrors[index]?.weightKg}
-                  helperText={
-                    ingredientErrors[index]?.weightKg
-                      ? ingredientErrors[index]?.weightKg
-                      : ""
+                  type="number"
+                  error={!!ingredientErrors[index]?.quantity}
+                  helperText={ingredientErrors[index]?.quantity ?? ""}
+                  value={ingredient.quantity}
+                  onChange={(event) =>
+                    handleQuantityChange(index, event)
                   }
-                  value={ingredient.weightKg}
-                  onChange={(event) => handleWeightChange(index, event)}
-                  label="Weight"
+                  label="Quantity"
                   slotProps={{
+                    htmlInput: {
+                      step: "any",
+                    },
                     input: {
-                      endAdornment: (
-                        <InputAdornment position="end">kg</InputAdornment>
-                      ),
+                      endAdornment: selectedRawIngredient ? (
+                        <InputAdornment position="end">
+                          {formatUnit(selectedRawIngredient.canonicalUnit)}
+                        </InputAdornment>
+                      ) : undefined,
                     },
                   }}
                   sx={{ flex: 1, minWidth: 160 }}
@@ -359,7 +387,8 @@ function CreateRecipeDialog({
                 )}
               </Stack>
             </Box>
-          ))}
+            );
+          })}
           <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
             <Button type="button" onClick={handleAddIngredientClick}>
               + Add Ingredient
