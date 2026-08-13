@@ -63,7 +63,7 @@ function PurchaseDetailsDialog({
                         >
                         <Typography sx={{ mb:1 }}><strong>Supplier:</strong>  {selectedPurchase.supplier.name}</Typography>
                         <Typography sx={{ mb:1 }}><strong>Date:</strong> {new Date(selectedPurchase.date).toLocaleDateString()}</Typography>
-                        <Typography><strong>Total Price:</strong> ${selectedPurchase.totalPrice.toFixed(2)}</Typography>
+                        <Typography><strong>Total Price:</strong> ₡{selectedPurchase.totalPrice.toFixed(2)}</Typography>
                     </Box>
                 </Stack>
               <Divider sx={{ mb:2 }}/>
@@ -87,8 +87,8 @@ function PurchaseDetailsDialog({
                                                                                                         {i.rawIngredient
                                                                                                           ? formatUnit(i.rawIngredient.canonicalUnit)
                                                                                                           : ""}</TableCell>
-                                <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>${i.pricePerUnit.toFixed(2)}</TableCell>
-                                <TableCell align="center" >${i.totalPrice.toFixed(2)}</TableCell>
+                                <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>₡{i.pricePerUnit.toFixed(2)}</TableCell>
+                                <TableCell align="center" >₡{i.totalPrice.toFixed(2)}</TableCell>
                             </TableRow>
                             ))
                         }

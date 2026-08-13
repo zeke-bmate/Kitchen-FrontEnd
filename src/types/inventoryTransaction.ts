@@ -2,7 +2,9 @@ export type InventoryTransactionType =
   | "PURCHASE"
   | "PRODUCTION"
   | "ADJUSTMENT"
-  | "WASTE";
+  | "WASTE"
+  | "TRANSFER_IN"
+  | "TRANSFER_OUT";
 
 export type InventoryTransaction = {
   id: string;
@@ -14,6 +16,7 @@ export type InventoryTransaction = {
   reason: string | null;
   purchaseId: string | null;
   productionBatchId: string | null;
+  inventoryTransferId: string | null;
   createdAt: string;
 
   purchase: {
@@ -41,5 +44,12 @@ export type InventoryTransaction = {
       servings: number;
       createdAt: string;
     };
+  } | null;
+
+  inventoryTransfer: {
+    id: string;
+    sourceLocation: string;
+    destinationLocation: string;
+    createdAt: string;
   } | null;
 };
