@@ -22,9 +22,22 @@ import {
   Chip,
 } from "@mui/material";
 import apiFetch from "../api/apiFetch";
-import type { Order, OrderDetails, OrderStatus } from "../types/orders";
+import type { Order, OrderDetails, OrderLocation, OrderStatus } from "../types/orders";
 import type { Recipe } from "../types/recipe";
 import OrderDetailsDialog from "../components/OrderDetailsDialog";
+
+const formatLocation = (location: OrderDetails["location"]) => {
+  switch (location) {
+    case "DEE_PLACE":
+      return "DeePlace";
+    case "ECHO_POKER":
+      return "Echo Poker";
+    case "ECHO_EVENTS":
+      return "Echo Events";
+    default:
+      return "--";
+  }
+};
 
 function OrdersPage() {
   
@@ -41,6 +54,8 @@ function OrdersPage() {
   const [quantityError, setQuantityError] = useState<string | null>(null);
   const [selectedOrder, setSelectedOrder] = useState<OrderDetails | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState<OrderLocation | "">("");
+  const [locationError, setLocationError] = useState<string | null>(null);
 
   const nextStatusMap: Partial<Record<OrderStatus, OrderStatus>> = {
       CREATED: "PENDING",
@@ -67,6 +82,11 @@ function OrdersPage() {
 
   const handleQuantityChange = (event) => {
     setQuantity(event.target.value);
+  };
+
+  const handleLocationChange = (event) => {
+    setLocationError(null);
+    setSelectedLocation(event.target.value);
   };
 
   const handleOpenOrder = async (orderId: string) => {
@@ -107,6 +127,7 @@ function OrdersPage() {
     setRecipeError(null);
     setQuantityError(null);
     setFormError(null);
+    setLocationError(null);
     if (!trimmedRecipeId) {
       setRecipeError("Recipe ID must be a non empty string.");
       return;
@@ -117,10 +138,15 @@ function OrdersPage() {
       );
       return;
     }
+    if (!selectedLocation) {
+      setLocationError("Location is required.");
+      return;
+    }
     setSubmitting(true);
     const data = {
       recipeId: trimmedRecipeId,
       quantity: quantityNum,
+      location: selectedLocation,
     };
     try {
       const response = await apiFetch("/api/orders", {
@@ -143,6 +169,7 @@ function OrdersPage() {
       ]);
       setSelectedRecipeId("");
       setQuantity("");
+      setSelectedLocation("");
     } catch (error) {
       if (error instanceof Error) {
         setFormError(error.message);
@@ -244,7 +271,7 @@ function OrdersPage() {
         Orders
       </Typography>
       <Typography variant="body1" sx={{ mb: 3 }}>
-        Track orders from Dee Place.
+        Track orders from Dee Place, Echo Poker, and Echo Events.
       </Typography>
       <form onSubmit={handleSubmit}>
             <Stack direction="row" spacing={5} sx={{ mb: 3 }}>
@@ -286,6 +313,24 @@ function OrdersPage() {
                       : "Select a recipe to view its servings per batch."
                 }
               />
+              <FormControl error={!!locationError} sx={{ minWidth: 180 }}>
+                <InputLabel id="location-select-label">Location</InputLabel>
+
+                <Select
+                  value={selectedLocation}
+                  onChange={handleLocationChange}
+                  label="Location"
+                  labelId="location-select-label"
+                >
+                  <MenuItem value="DEE_PLACE">DeePlace</MenuItem>
+                  <MenuItem value="ECHO_POKER">Echo Poker</MenuItem>
+                  <MenuItem value="ECHO_EVENTS">Echo Events</MenuItem>
+                </Select>
+
+                {!!locationError && (
+                  <FormHelperText>{locationError}</FormHelperText>
+                )}
+              </FormControl>
               <Button type="submit" variant="contained" disabled={submitting}>
                 {submitting ? "Adding..." : "Submit"}
               </Button>
@@ -325,6 +370,17 @@ function OrdersPage() {
                   }}
                 >
                   Quantity
+                </TableCell>
+                <TableCell
+                  align="center"
+                  sx={{
+                    color: "white",
+                    fontWeight: 700,
+                    backgroundColor: "primary.main",
+                    borderBottom: "1px solid #e0e0e0",
+                  }}
+                >
+                  Location
                 </TableCell>
                 <TableCell
                   align="center"
@@ -378,6 +434,12 @@ function OrdersPage() {
                     sx={{ borderRight: "1px solid #e0e0e0" }}
                   >
                     {o.quantity}
+                  </TableCell>
+                  <TableCell
+                    align="center"
+                    sx={{ borderRight: "1px solid #e0e0e0" }}
+                  >
+                    {formatLocation(o.location)}
                   </TableCell>
                   <TableCell
                     align="center"

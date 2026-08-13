@@ -8,6 +8,19 @@ type OrderDetailsDialogProps = {
     onClose: () => void;
 };
 
+const formatLocation = (location: OrderDetails["location"]) => {
+  switch (location) {
+    case "DEE_PLACE":
+      return "DeePlace";
+    case "ECHO_POKER":
+      return "Echo Poker";
+    case "ECHO_EVENTS":
+      return "Echo Events";
+    default:
+      return "Not specified";
+  }
+};
+
 function OrderDetailsDialog({
     selectedOrder,
     open,
@@ -53,6 +66,7 @@ function OrderDetailsDialog({
                         >
                         <Typography sx={{ mb:1 }}><strong>Order:</strong>  {selectedOrder.recipe?.name ?? "No Recipe"}</Typography>
                         <Typography sx={{ mb:1 }}><strong>Servings:</strong>  {selectedOrder.quantity}</Typography>
+                        <Typography sx={{ mb: 1 }}><strong>Location:</strong>{" "} {formatLocation(selectedOrder.location)} </Typography>
                         <Typography sx={{ mb:1 }}><strong>Current Status:</strong>  {selectedOrder.status}</Typography>
                         <Typography sx={{ mb:1 }}><strong>Created Date:</strong>  {new Date(selectedOrder.createdAt).toLocaleString()}</Typography>
                     </Box>

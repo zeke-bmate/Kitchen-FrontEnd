@@ -24,6 +24,8 @@ import apiFetch from "../api/apiFetch.ts";
 import AdjustmentInventoryDialog from "../components/AdjustmentInventoryDialog.tsx";
 import InventoryHistoryDialog from "../components/InventoryHistoryDialog.tsx";
 import type { MeasurementUnit } from "../types/measurementUnit";
+import TransferInventoryDialog from "../components/TransferInventoryDialog.tsx";
+import TransferHistoryDialog from "../components/TransferHistoryDialog.tsx";
 
 const formatUnit = (unit: MeasurementUnit) => {
   switch (unit) {
@@ -55,6 +57,9 @@ function RawIngredientsPage() {
   const [adjustDialogOpen, setAdjustDialogOpen] = useState(false);
   const [historyIngredient, setHistoryIngredient] = useState<RawIngredient | null>(null);
   const [historyDialogOpen, setHistoryDialogOpen] = useState(false);
+  const [transferIngredient, setTransferIngredient] = useState<RawIngredient | null>(null);
+  const [transferDialogOpen, setTransferDialogOpen] = useState(false);
+  const [transferHistoryOpen, setTransferHistoryOpen] = useState(false);
 
   const handleNameChange = (event) => {
     setName(event.target.value);
@@ -78,6 +83,18 @@ function RawIngredientsPage() {
   const handleCloseHistoryDialog = () => {
     setHistoryDialogOpen(false);
     setHistoryIngredient(null);
+  };
+
+  const handleOpenTransferDialog = (
+    ingredient: RawIngredient
+  ) => {
+    setTransferIngredient(ingredient);
+    setTransferDialogOpen(true);
+  };
+
+  const handleCloseTransferDialog = () => {
+    setTransferDialogOpen(false);
+    setTransferIngredient(null);
   };
 
   const handleSubmit = async (event) => {
@@ -140,6 +157,21 @@ function RawIngredientsPage() {
     }
   };
 
+  const handleTransferCreated = (
+    updatedIngredient: RawIngredient
+  ) => {
+    setIngredients((previousIngredients) =>
+      previousIngredients.map((ingredient) =>
+        ingredient.id === updatedIngredient.id
+          ? updatedIngredient
+          : ingredient
+      )
+    );
+  
+    setTransferDialogOpen(false);
+    setTransferIngredient(null);
+  };
+
   const handleOpenAdjustDialog = (
     ingredient: RawIngredient
   ) => {
@@ -200,9 +232,25 @@ function RawIngredientsPage() {
 
   return (
     <Box sx={{ padding: 4, maxWidth: 1000, mx: "auto" }}>
-      <Typography variant="h4" sx={{ fontWeight: 700, mb: 3 }}>
-        Raw Ingredients
-      </Typography>
+      <Stack
+        direction="row"
+        sx={{
+          justifyContent: "space-between",
+          alignItems: "center",
+          mb: 3,
+        }}
+      >
+        <Typography variant="h4" sx={{ fontWeight: 700 }}>
+          Raw Ingredients
+        </Typography>
+      
+        <Button
+          variant="outlined"
+          onClick={() => setTransferHistoryOpen(true)}
+        >
+          Transfer History
+        </Button>
+      </Stack>
       <Typography variant="body1" sx={{ mb: 3 }}>
         Track current raw inventory by canonical unit.
       </Typography>
@@ -339,15 +387,31 @@ function RawIngredientsPage() {
                     {new Date(i.createdAt).toLocaleDateString()}
                   </TableCell>
                   <TableCell align="center">
-                    <Button
-                      variant="outlined"
-                      onClick={(event) => {
-                        event.stopPropagation();
-                        handleOpenAdjustDialog(i);
-                      }}
+                    <Stack
+                      direction="row"
+                      spacing={1}
+                      sx={{ justifyContent: "center" }}
                     >
-                      Adjust
-                    </Button>
+                      <Button
+                        variant="outlined"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleOpenAdjustDialog(i);
+                        }}
+                      >
+                        Adjust
+                      </Button>
+                      
+                      <Button
+                        variant="outlined"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleOpenTransferDialog(i);
+                        }}
+                      >
+                        Transfer
+                      </Button>
+                    </Stack>
                   </TableCell>
                 </TableRow>
               ))}
@@ -368,6 +432,20 @@ function RawIngredientsPage() {
         open={historyDialogOpen}
         ingredient={historyIngredient}
         onClose={handleCloseHistoryDialog}
+      />
+
+      {transferIngredient && (
+        <TransferInventoryDialog
+          open={transferDialogOpen}
+          ingredient={transferIngredient}
+          onClose={handleCloseTransferDialog}
+          onTransferCreated={handleTransferCreated}
+        />
+      )}
+
+      <TransferHistoryDialog
+        open={transferHistoryOpen}
+        onClose={() => setTransferHistoryOpen(false)}
       />
     </Box>
   );

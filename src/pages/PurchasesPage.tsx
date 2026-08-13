@@ -235,7 +235,7 @@ function PurchasesPage() {
                   >
                     {p.items.length}
                   </TableCell>
-                  <TableCell align="center">{`$${p.totalPrice.toFixed(2)}`}</TableCell>
+                  <TableCell align="center">{`₡${p.totalPrice.toFixed(2)}`}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

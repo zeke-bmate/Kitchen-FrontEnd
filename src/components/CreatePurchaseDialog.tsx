@@ -543,7 +543,7 @@ function CreatePurchaseDialog({
                   },
                   input: {
                     endAdornment: (
-                      <InputAdornment position="start">$</InputAdornment>
+                      <InputAdornment position="start">₡</InputAdornment>
                     ),
                   },
                 }}

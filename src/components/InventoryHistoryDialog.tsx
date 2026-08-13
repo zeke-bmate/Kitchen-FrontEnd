@@ -39,6 +39,21 @@ const formatUnit = (unit: MeasurementUnit) => {
   }
 };
 
+const formatLocation = (location: string) => {
+  switch (location) {
+    case "ECHO_KITCHEN":
+      return "Echo Kitchen";
+    case "DEE_PLACE":
+      return "DeePlace";
+    case "ECHO_POKER":
+      return "Echo Poker";
+    case "ECHO_EVENTS":
+      return "Echo Events";
+    default:
+      return location;
+  }
+};
+
 type InventoryHistoryDialogProps = {
   open: boolean;
   ingredient: RawIngredient | null;
@@ -68,6 +83,21 @@ const getSourceOrReason = (
 
   if (transaction.type === "ADJUSTMENT") {
     return transaction.reason || "Manual adjustment";
+  }
+
+  if (
+    transaction.type === "TRANSFER_IN" ||
+    transaction.type === "TRANSFER_OUT"
+  ) {
+    if (!transaction.inventoryTransfer) {
+      return "Inventory transfer";
+    }
+
+    return `${formatLocation(
+      transaction.inventoryTransfer.sourceLocation
+    )} → ${formatLocation(
+      transaction.inventoryTransfer.destinationLocation
+    )}`;
   }
 
   return transaction.reason || "—";
