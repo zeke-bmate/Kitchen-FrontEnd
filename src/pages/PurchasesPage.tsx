@@ -18,6 +18,7 @@ import PurchaseDetailsDialog from "../components/PurchaseDetailsDialog";
 import type { RawIngredient } from "../types/rawIngredient";
 import CreatePurchaseDialog from "../components/CreatePurchaseDialog";
 import apiFetch from "../api/apiFetch";
+import EditPurchaseDialog from "../components/EditPurchaseDialog";
 
 function PurchasesPage() {
   const [purchases, setPurchases] = useState<Purchase[]>([]);
@@ -35,6 +36,8 @@ function PurchasesPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [rawIngredients, setRawIngredients] = useState<RawIngredient[]>([]);
+  const [editPurchase, setEditPurchase] = useState<Purchase | null>(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
 
   const handlePurchaseClick = (purchase: Purchase) => {
     setSelectedPurchase(purchase);
@@ -46,11 +49,36 @@ function PurchasesPage() {
     setSelectedPurchase(null);
   };
 
-  const handlePurchaseCreated = (createdPurchase) => {
+  const handlePurchaseCreated = (
+    createdPurchase: Purchase
+  ) => {
     setPurchases((previousPurchases) => [
       createdPurchase,
       ...previousPurchases,
     ]);
+  
+    const purchaseIngredients = createdPurchase.items
+      .map((item) => item.rawIngredient)
+      .filter(
+        (ingredient): ingredient is RawIngredient =>
+          ingredient !== null &&
+          ingredient !== undefined
+      );
+  
+    setRawIngredients((previousIngredients) => {
+      const ingredientMap = new Map(
+        previousIngredients.map((ingredient) => [
+          ingredient.id,
+          ingredient,
+        ])
+      );
+  
+      for (const ingredient of purchaseIngredients) {
+        ingredientMap.set(ingredient.id, ingredient);
+      }
+  
+      return Array.from(ingredientMap.values());
+    });
   };
 
   const handleCreatePurchaseClick = () => {
@@ -59,6 +87,33 @@ function PurchasesPage() {
 
   const handleCreatePurchaseClose = () => {
     setCreateDialogOpen(false);
+  };
+
+  const handleEditPurchase = (purchase: Purchase) => {
+    setDialogOpen(false);
+    setEditPurchase(purchase);
+    setEditDialogOpen(true);
+  };
+  
+  const handleEditPurchaseClose = () => {
+    setEditDialogOpen(false);
+    setEditPurchase(null);
+  };
+  
+  const handlePurchaseUpdated = (
+    updatedPurchase: Purchase
+  ) => {
+    setPurchases((previousPurchases) =>
+      previousPurchases.map((purchase) =>
+        purchase.id === updatedPurchase.id
+          ? updatedPurchase
+          : purchase
+      )
+    );
+  
+    setSelectedPurchase(updatedPurchase);
+    setEditDialogOpen(false);
+    setEditPurchase(null);
   };
 
   useEffect(() => {
@@ -248,6 +303,7 @@ function PurchasesPage() {
           selectedPurchase={selectedPurchase}
           open={dialogOpen}
           onClose={handlePurchaseClose}
+          onEdit={handleEditPurchase}
         />
       )}
       {createDialogOpen && (
@@ -257,6 +313,17 @@ function PurchasesPage() {
           onPurchaseCreated={handlePurchaseCreated}
           suppliers={suppliers}
           rawIngredients={rawIngredients}
+        />
+      )}
+
+      {editPurchase && (
+        <EditPurchaseDialog
+          open={editDialogOpen}
+          purchase={editPurchase}
+          suppliers={suppliers}
+          rawIngredients={rawIngredients}
+          onClose={handleEditPurchaseClose}
+          onPurchaseUpdated={handlePurchaseUpdated}
         />
       )}
     </Box>

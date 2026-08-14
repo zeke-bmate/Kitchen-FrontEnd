@@ -1,3 +1,5 @@
+import type { RawIngredient } from "./rawIngredient";
+
 export type PurchaseItem = {
   id: string;
   purchaseId: string;
@@ -7,4 +9,5 @@ export type PurchaseItem = {
   pricePerUnit: number;
   totalPrice: number;
   rawIngredientId: string | null;
+  rawIngredient: RawIngredient | null;
 };
