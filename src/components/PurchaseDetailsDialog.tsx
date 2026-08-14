@@ -1,4 +1,4 @@
-import { Dialog, DialogTitle, DialogContent, Typography, Divider, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Box, Stack } from "@mui/material";
+import { Dialog, DialogTitle, DialogContent, Typography, Divider, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Box, Stack, Button } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 
 const formatUnit = (unit) => {
@@ -22,6 +22,7 @@ function PurchaseDetailsDialog({
     selectedPurchase,
     open,
     onClose,
+    onEdit,
 }) {
     return (
         <Dialog 
@@ -65,6 +66,15 @@ function PurchaseDetailsDialog({
                         <Typography sx={{ mb:1 }}><strong>Date:</strong> {new Date(selectedPurchase.date).toLocaleDateString()}</Typography>
                         <Typography><strong>Total Price:</strong> ₡{selectedPurchase.totalPrice.toFixed(2)}</Typography>
                     </Box>
+
+                    <Button
+                      variant="contained"
+                      onClick={() => {
+                        onEdit(selectedPurchase);
+                      }}
+                    >
+                      Edit Purchase
+                    </Button>
                 </Stack>
               <Divider sx={{ mb:2 }}/>
               <TableContainer component={Paper} sx={{ borderRadius: 3, overflow: "hidden" }}>
