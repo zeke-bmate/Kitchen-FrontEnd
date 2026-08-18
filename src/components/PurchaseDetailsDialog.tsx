@@ -1,5 +1,6 @@
 import { Dialog, DialogTitle, DialogContent, Typography, Divider, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Box, Stack, Button } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
+import { useTranslation } from "react-i18next";
 
 const formatUnit = (unit) => {
   switch (unit) {
@@ -24,6 +25,7 @@ function PurchaseDetailsDialog({
     onClose,
     onEdit,
 }) {
+  const { t } = useTranslation();
     return (
         <Dialog 
             open={open}
@@ -36,7 +38,7 @@ function PurchaseDetailsDialog({
               },
             }}
         >
-        <DialogTitle sx={{ fontWeight: 700, pr: 6 }}>Purchase Details</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700, pr: 6 }}>{t("purchases.details.title")}</DialogTitle>
             <IconButton
               aria-label="close"
               onClick={onClose}
@@ -62,9 +64,9 @@ function PurchaseDetailsDialog({
                             borderRadius: 2,
                           }}
                         >
-                        <Typography sx={{ mb:1 }}><strong>Supplier:</strong>  {selectedPurchase.supplier.name}</Typography>
-                        <Typography sx={{ mb:1 }}><strong>Date:</strong> {new Date(selectedPurchase.date).toLocaleDateString()}</Typography>
-                        <Typography><strong>Total Price:</strong> ₡{selectedPurchase.totalPrice.toFixed(2)}</Typography>
+                        <Typography sx={{ mb:1 }}><strong>{t("purchases.details.supplier")}:</strong>  {selectedPurchase.supplier.name}</Typography>
+                        <Typography sx={{ mb:1 }}><strong>{t("purchases.details.date")}:</strong> {new Date(selectedPurchase.date).toLocaleDateString()}</Typography>
+                        <Typography><strong>{t("purchases.details.totalPrice")}:</strong> ₡{selectedPurchase.totalPrice.toFixed(2)}</Typography>
                     </Box>
 
                     <Button
@@ -73,7 +75,7 @@ function PurchaseDetailsDialog({
                         onEdit(selectedPurchase);
                       }}
                     >
-                      Edit Purchase
+                      {t("purchases.details.editPurchase")}
                     </Button>
                 </Stack>
               <Divider sx={{ mb:2 }}/>
@@ -81,11 +83,11 @@ function PurchaseDetailsDialog({
                 <Table>
                     <TableHead>
                         <TableRow>
-                            <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'}}>Item</TableCell>
-                            <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>Order Units</TableCell>
-                            <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>Quantity</TableCell>
-                            <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>Price/ Unit</TableCell>
-                            <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>Total</TableCell>
+                            <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'}}>{t("purchases.details.item")}</TableCell>
+                            <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>{t("purchases.details.orderUnits")}</TableCell>
+                            <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>{t("purchases.details.quantity")}</TableCell>
+                            <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>{t("purchases.details.pricePerUnit")}</TableCell>
+                            <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>{t("purchases.details.total")}</TableCell>
                         </TableRow>
                     </TableHead>
                     <TableBody>

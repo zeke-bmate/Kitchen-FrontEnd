@@ -10,5 +10,61 @@
     "inventory": "Inventario",
     "users": "Usuarios",
     "logout": "Cerrar sesión"
+  },
+  "purchases": {
+    "title": "Compras",
+    "subtitle": "Registra las compras por proveedor.",
+    "createPurchase": "Crear compra",
+    "table": {
+      "date": "Fecha",
+      "supplier": "Proveedor",
+      "itemsCount": "Cantidad de artículos",
+      "totalPrice": "Precio total"
+    },
+    "empty": "No se encontraron compras.",
+    "loading": "Cargando...",
+    "details": {
+      "title": "Detalles de la compra",
+      "supplier": "Proveedor",
+      "date": "Fecha",
+      "totalPrice": "Precio total",
+      "item": "Artículo",
+      "orderUnits": "Unidades del pedido",
+      "quantity": "Cantidad",
+      "pricePerUnit": "Precio / unidad",
+      "total": "Total",
+      "editPurchase": "Editar compra"
+    },
+    "form": {
+      "createTitle": "Crear compra",
+      "supplier": "Proveedor",
+      "date": "Fecha",
+      "ingredient": "Ingrediente",
+      "orderUnits": "Unidades del pedido (opcional)",
+      "quantity": "Cantidad",
+      "totalPrice": "Precio total",
+      "canonicalUnit": "Unidad",
+      "addItem": "Agregar artículo",
+      "remove": "Eliminar",
+      "create": "Crear compra",
+      "creating": "Creando...",
+      "newIngredient": "Ingrediente nuevo",
+      "editTitle": "Editar compra",
+      "correctionReason": "Motivo de la corrección",
+      "saveChanges": "Guardar cambios",
+      "updating": "Actualizando...",
+      "errors": {
+        "supplierRequired": "El proveedor es obligatorio.",
+        "dateRequired": "La fecha es obligatoria.",
+        "ingredientRequired": "El ingrediente es obligatorio.",
+        "quantityPositive": "La cantidad debe ser mayor que cero.",
+        "totalPricePositive": "El precio total debe ser mayor que cero.",
+        "unitRequired": "La unidad es obligatoria para un ingrediente nuevo.",
+        "createFailed": "No se pudo crear la compra.",
+        "reasonRequired": "El motivo de la corrección es obligatorio.",
+        "existingIngredientRequired": "Se requiere un ingrediente existente.",
+        "updateFailed": "No se pudo actualizar la compra."
+      }
+    }
   }
 }

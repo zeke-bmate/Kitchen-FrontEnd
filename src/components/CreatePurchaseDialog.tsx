@@ -25,6 +25,7 @@ import type { Supplier } from "../types/supplier";
 import type { RawIngredient } from "../types/rawIngredient";
 import apiFetch from "../api/apiFetch";
 import type { MeasurementUnit } from "../types/measurementUnit";
+import { useTranslation } from "react-i18next";
 
 const formatUnit = (unit: MeasurementUnit) => {
   switch (unit) {
@@ -71,6 +72,7 @@ function CreatePurchaseDialog({
   suppliers,
   rawIngredients,
 }: CreatePurchaseDialogProps) {
+  const { t } = useTranslation();
   const draft = getPurchaseDraft();
   const [supplierId, setSupplierId] = useState<string>(draft?.supplierId ?? "");
   const [date, setDate] = useState<string>(draft?.date ?? "");
@@ -240,11 +242,11 @@ function CreatePurchaseDialog({
     setDateError(null);
     setFormError(null);
     if (!trimmedSupplierId) {
-      setSupplierError("Supplier ID must be a non empty string.");
+      setSupplierError(t("purchases.form.errors.supplierRequired"));
       return;
     }
     if (!date) {
-      setDateError("Date must be a valid date");
+      setDateError(t("purchases.form.errors.dateRequired"));
       return;
     }
 
@@ -274,18 +276,18 @@ function CreatePurchaseDialog({
 
       if (!rawIngredientId && !newIngredientName) {
         newErrors[p].itemName =
-          "Select an existing ingredient or enter a new ingredient.";
+          t("purchases.form.errors.ingredientRequired");
         hasErrors = true;
       }
 
       if (Number.isNaN(quantityNum) || quantityNum <= 0) {
         newErrors[p].quantity =
-          "Quantity must be a positive number greater than zero.";
+          t("purchases.form.errors.quantityPositive");
         hasErrors = true;
       }
       if (Number.isNaN(totalPriceNum) || totalPriceNum <= 0) {
         newErrors[p].totalPrice =
-          "Total price must be a positive number greater than zero.";
+          t("purchases.form.errors.totalPricePositive");
         hasErrors = true;
       }
     }
@@ -317,7 +319,7 @@ function CreatePurchaseDialog({
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to create purchase");
+        throw new Error(errorData.error || t("purchases.form.createFailed"));
       }
       const createdPurchase = await response.json();
 
@@ -339,7 +341,7 @@ function CreatePurchaseDialog({
       if (error instanceof Error) {
         setFormError(error.message);
       } else {
-        setFormError("Failed to create purchase.");
+        setFormError(t("purchases.form.errors.createFailed"));
       }
     } finally {
       setSubmitting(false);
@@ -360,7 +362,7 @@ function CreatePurchaseDialog({
         },
       }}
     >
-      <DialogTitle sx={{ fontWeight: 700, pr: 6 }}>New Purchase</DialogTitle>
+      <DialogTitle sx={{ fontWeight: 700, pr: 6 }}>{t("purchases.form.createTitle")}</DialogTitle>
       <IconButton
         aria-label="close"
         onClick={onClose}
@@ -377,11 +379,11 @@ function CreatePurchaseDialog({
         <form onSubmit={handleSubmit}>
           <Stack direction="row" spacing={5} sx={{ mb: 3 }}>
             <FormControl error={!!supplierError} sx={{ minWidth: 200 }}>
-              <InputLabel id="supplier-select-label">Supplier</InputLabel>
+              <InputLabel id="supplier-select-label">{t("purchases.form.supplier")}</InputLabel>
               <Select
                 value={supplierId}
                 onChange={handleSupplierChange}
-                label="Supplier"
+                label={t("purchases.form.supplier")}
                 labelId="supplier-select-label"
               >
                 {suppliers.map((s) => (
@@ -397,7 +399,7 @@ function CreatePurchaseDialog({
             <TextField
               error={!!dateError}
               helperText={dateError ? dateError : ""}
-              label="Date"
+              label={t("purchases.form.date")}
               value={date}
               onChange={handleDateChange}
               type="date"
@@ -450,7 +452,7 @@ function CreatePurchaseDialog({
                 renderInput={(params) => (
                   <TextField
                     {...params}
-                    label="Ingredient"
+                    label={t("purchases.form.ingredient")}
                     error={!!purchaseItemErrors[index]?.itemName}
                     helperText={
                       purchaseItemErrors[index]?.itemName ?? ""
@@ -461,11 +463,11 @@ function CreatePurchaseDialog({
               {purchaseItem.newIngredientName &&
                 !purchaseItem.rawIngredientId && (
                   <FormControl sx={{ minWidth: 120 }}>
-                    <InputLabel>Unit</InputLabel>
+                    <InputLabel>{t("purchases.form.canonicalUnit")}</InputLabel>
                 
                     <Select
                       value={purchaseItem.canonicalUnit ?? "KG"}
-                      label="Unit"
+                      label={t("purchases.form.canonicalUnit")}
                       onChange={(event) =>
                         handleCanonicalUnitChange(
                           index,
@@ -490,7 +492,7 @@ function CreatePurchaseDialog({
                 }
                 value={purchaseItem.orderUnits}
                 onChange={(event) => handleOrderUnitsChange(index, event)}
-                label="Order Units (optional)"
+                label={t("purchases.form.orderUnits")}
               />
               <TextField
                 type="number"
@@ -502,7 +504,7 @@ function CreatePurchaseDialog({
                 onChange={(event) =>
                   handleQuantityChange(index, event)
                 }
-                label="Quantity"
+                label={t("purchases.form.quantity")}
                 slotProps={{
                   htmlInput: {
                     step: "any",
@@ -536,7 +538,7 @@ function CreatePurchaseDialog({
                 }
                 value={purchaseItem.totalPrice}
                 onChange={(event) => handleTotalPriceChange(index, event)}
-                label="Total Price"
+                label={t("purchases.form.totalPrice")}
                 slotProps={{
                   htmlInput: {
                     step: "any",
@@ -554,19 +556,19 @@ function CreatePurchaseDialog({
                   color="error"
                   onClick={() => handleRemoveItemClick(index)}
                 >
-                  Remove
+                  {t("purchases.form.remove")}
                 </Button>
               )}
             </Stack>
           ))}
           <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
             <Button type="button" onClick={handleAddItemClick}>
-              + Add Item
+              {t("purchases.form.addItem")}
             </Button>
           </Box>
           <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
             <Button type="submit" variant="contained" disabled={submitting}>
-              {submitting ? "Creating..." : "Create Purchase"}
+              {submitting ? t("purchases.form.creating") : t("purchases.form.create")}
             </Button>
           </Box>
         </form>

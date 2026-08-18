@@ -26,6 +26,7 @@ import type { Supplier } from "../types/supplier";
 import type { RawIngredient } from "../types/rawIngredient";
 import type { MeasurementUnit } from "../types/measurementUnit";
 import apiFetch from "../api/apiFetch";
+import { useTranslation } from "react-i18next";
 
 const formatUnit = (unit: MeasurementUnit) => {
   switch (unit) {
@@ -59,6 +60,7 @@ function EditPurchaseDialog({
   onClose,
   onPurchaseUpdated,
 }: EditPurchaseDialogProps) {
+  const { t } = useTranslation(); 
   const [supplierId, setSupplierId] = useState("");
   const [date, setDate] = useState("");
   const [reason, setReason] = useState("");
@@ -146,17 +148,17 @@ function EditPurchaseDialog({
     let hasErrors = false;
   
     if (!trimmedSupplierId) {
-      setSupplierError("Supplier is required.");
+      setSupplierError(t("purchases.form.errors.supplierRequired"));
       hasErrors = true;
     }
   
     if (!date) {
-      setDateError("Date is required.");
+      setDateError(t("purchases.form.errors.dateRequired"));
       hasErrors = true;
     }
   
     if (!trimmedReason) {
-      setReasonError("Correction reason is required.");
+      setReasonError(t("purchases.form.errors.reasonRequired"));
       hasErrors = true;
     }
   
@@ -174,7 +176,7 @@ function EditPurchaseDialog({
   
       if (!item.rawIngredientId) {
         newErrors[index].itemName =
-          "An existing raw ingredient is required.";
+          t("purchases.form.errors.existingIngredientRequired");
         hasErrors = true;
       }
   
@@ -183,7 +185,7 @@ function EditPurchaseDialog({
         quantity <= 0
       ) {
         newErrors[index].quantity =
-          "Quantity must be greater than zero.";
+          t("purchases.form.errors.quantityPositive");
         hasErrors = true;
       }
   
@@ -192,7 +194,7 @@ function EditPurchaseDialog({
         totalPrice <= 0
       ) {
         newErrors[index].totalPrice =
-          "Total price must be greater than zero.";
+          t("purchases.form.errors.totalPricePositive");
         hasErrors = true;
       }
     });
@@ -232,7 +234,7 @@ function EditPurchaseDialog({
         const errorData = await response.json();
   
         throw new Error(
-          errorData.error || "Failed to update purchase."
+          errorData.error || t("purchases.form.errors.updateFailed")
         );
       }
   
@@ -245,7 +247,7 @@ function EditPurchaseDialog({
       if (error instanceof Error) {
         setFormError(error.message);
       } else {
-        setFormError("Failed to update purchase.");
+        setFormError(t("purchases.form.errors.updateFailed"));
       }
     } finally {
       setSubmitting(false);
@@ -267,7 +269,7 @@ return (
       }}
     >
       <DialogTitle sx={{ fontWeight: 700, pr: 6 }}>
-        Edit Purchase
+        {t("purchases.form.editTitle")}
       </DialogTitle>
   
       <IconButton
@@ -288,12 +290,12 @@ return (
           <Stack direction="row" spacing={5} sx={{ mb: 3 }}>
             <FormControl error={!!supplierError} sx={{ minWidth: 200 }}>
               <InputLabel id="edit-supplier-select-label">
-                Supplier
+                {t("purchases.form.supplier")}
               </InputLabel>
   
               <Select
                 value={supplierId}
-                label="Supplier"
+                label={t("purchases.form.supplier")}
                 labelId="edit-supplier-select-label"
                 onChange={(event) => {
                   setSupplierError(null);
@@ -318,7 +320,7 @@ return (
             </FormControl>
   
             <TextField
-              label="Date"
+              label={t("purchases.form.date")}
               type="date"
               value={date}
               onChange={(event) => {
@@ -337,7 +339,7 @@ return (
   
           <TextField
             fullWidth
-            label="Correction Reason"
+            label={t("purchases.form.correctionReason")}
             value={reason}
             onChange={(event) => {
               setReasonError(null);
@@ -391,7 +393,7 @@ return (
                 renderInput={(params) => (
                   <TextField
                     {...params}
-                    label="Ingredient"
+                    label={t("purchases.form.ingredient")}
                     error={
                       !!purchaseItemErrors[index]?.itemName
                     }
@@ -405,7 +407,7 @@ return (
   
               <TextField
                 value={purchaseItem.orderUnits}
-                label="Order Units (optional)"
+                label={t("purchases.form.orderUnits")}
                 onChange={(event) => {
                   setPurchaseItems((previousItems) =>
                     previousItems.map((item, itemIndex) =>
@@ -422,7 +424,7 @@ return (
   
               <TextField
                 type="number"
-                label="Quantity"
+                label={t("purchases.form.quantity")}
                 value={purchaseItem.quantity}
                 onChange={(event) => {
                   setPurchaseItems((previousItems) =>
@@ -466,7 +468,7 @@ return (
   
               <TextField
                 type="number"
-                label="Total Price"
+                label={t("purchases.form.totalPrice")}
                 value={purchaseItem.totalPrice}
                 onChange={(event) => {
                   setPurchaseItems((previousItems) =>
@@ -506,7 +508,7 @@ return (
                   color="error"
                   onClick={() => handleRemoveItemClick(index)}
                 >
-                  Remove
+                  {t("purchases.form.remove")}
                 </Button>
               )}
             </Stack>
@@ -523,7 +525,7 @@ return (
               type="button"
               onClick={handleAddItemClick}
             >
-              + Add Item
+              {t("purchases.form.addItem")}
             </Button>
           </Box>
   
@@ -538,7 +540,7 @@ return (
               variant="contained"
               disabled={submitting}
             >
-              {submitting ? "Updating..." : "Save Changes"}
+              {submitting ? t("purchases.form.updating") : t("purchases.form.saveChanges")}
             </Button>
           </Box>
         </form>
