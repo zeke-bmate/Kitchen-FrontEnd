@@ -10,5 +10,61 @@
     "inventory": "成品庫存",
     "users": "使用者",
     "logout": "登出"
+  },
+  "purchases": {
+    "title": "採購",
+    "subtitle": "依供應商記錄採購。",
+    "createPurchase": "新增採購",
+    "table": {
+      "date": "日期",
+      "supplier": "供應商",
+      "itemsCount": "品項數量",
+      "totalPrice": "總價"
+    },
+    "empty": "找不到採購記錄。",
+    "loading": "載入中...",
+    "details": {
+      "title": "採購詳情",
+      "supplier": "供應商",
+      "date": "日期",
+      "totalPrice": "總價",
+      "item": "品項",
+      "orderUnits": "訂購單位",
+      "quantity": "數量",
+      "pricePerUnit": "單價",
+      "total": "合計",
+      "editPurchase": "編輯採購"
+    },
+    "form": {
+      "createTitle": "新增採購",
+      "supplier": "供應商",
+      "date": "日期",
+      "ingredient": "原料",
+      "orderUnits": "訂購單位（選填）",
+      "quantity": "數量",
+      "totalPrice": "總價",
+      "canonicalUnit": "單位",
+      "addItem": "新增品項",
+      "remove": "移除",
+      "create": "新增採購",
+      "creating": "新增中...",
+      "newIngredient": "新增原料",
+      "editTitle": "編輯採購",
+      "correctionReason": "更正原因",
+      "saveChanges": "儲存變更",
+      "updating": "更新中...",
+      "errors": {
+        "supplierRequired": "請選擇供應商。",
+        "dateRequired": "請選擇日期。",
+        "ingredientRequired": "請選擇或輸入原料。",
+        "quantityPositive": "數量必須大於零。",
+        "totalPricePositive": "總價必須大於零。",
+        "unitRequired": "新增原料時必須選擇單位。",
+        "createFailed": "無法新增採購。",
+        "reasonRequired": "請輸入更正原因。",
+        "existingIngredientRequired": "請選擇現有原料。",
+        "updateFailed": "無法更新採購。"
+      }
+    }
   }
 }

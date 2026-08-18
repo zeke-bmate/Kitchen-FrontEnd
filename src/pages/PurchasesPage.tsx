@@ -19,8 +19,10 @@ import type { RawIngredient } from "../types/rawIngredient";
 import CreatePurchaseDialog from "../components/CreatePurchaseDialog";
 import apiFetch from "../api/apiFetch";
 import EditPurchaseDialog from "../components/EditPurchaseDialog";
+import { useTranslation } from "react-i18next";
 
 function PurchasesPage() {
+  const { t } = useTranslation();
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [items, setItems] = useState<PurchaseItemInput[]>([]);
@@ -194,22 +196,22 @@ function PurchasesPage() {
   return (
     <Box sx={{ padding: 4, maxWidth: 1000, mx: "auto" }}>
       <Typography variant="h4" sx={{ fontWeight: 700, mb: 3 }}>
-        Purchases
+        {t("purchases.title")}
       </Typography>
       <Typography variant="body1" sx={{ mb: 3 }}>
-        Track purchases by Supplier.
+        {t("purchases.subtitle")}
       </Typography>
       <Button
         variant="contained"
         onClick={handleCreatePurchaseClick}
         sx={{ mb: 3 }}
       >
-        Create Purchase
+        {t("purchases.createPurchase")}
       </Button>
       {isPurchaseLoading ? (
-        <Typography>Loading...</Typography>
+        <Typography>{t("purchases.loading")}</Typography>
       ) : purchases.length === 0 ? (
-        <Typography>No purchases found.</Typography>
+        <Typography>{t("purchases.empty")}</Typography>
       ) : (
         <TableContainer
           component={Paper}
@@ -227,7 +229,7 @@ function PurchasesPage() {
                     borderBottom: "1px solid #e0e0e0",
                   }}
                 >
-                  Date
+                  {t("purchases.table.date")}
                 </TableCell>
                 <TableCell
                   align="center"
@@ -238,7 +240,7 @@ function PurchasesPage() {
                     borderBottom: "1px solid #e0e0e0",
                   }}
                 >
-                  Supplier
+                  {t("purchases.table.supplier")}
                 </TableCell>
                 <TableCell
                   align="center"
@@ -249,7 +251,7 @@ function PurchasesPage() {
                     borderBottom: "1px solid #e0e0e0",
                   }}
                 >
-                  Items Count
+                  {t("purchases.table.itemsCount")}
                 </TableCell>
                 <TableCell
                   align="center"
@@ -260,7 +262,7 @@ function PurchasesPage() {
                     borderBottom: "1px solid #e0e0e0",
                   }}
                 >
-                  Total Price
+                  {t("purchases.table.totalPrice")}
                 </TableCell>
               </TableRow>
             </TableHead>

@@ -11,5 +11,61 @@
     "users": "Users",
     "logout": "Logout",
     "language": "Language"
+  },
+  "purchases": {
+    "title": "Purchases",
+    "subtitle": "Track purchases by supplier.",
+    "createPurchase": "Create Purchase",
+    "table": {
+      "date": "Date",
+      "supplier": "Supplier",
+      "itemsCount": "Items Count",
+      "totalPrice": "Total Price"
+    },
+    "empty": "No purchases found.",
+    "loading": "Loading...",
+    "details": {
+      "title": "Purchase Details",
+      "supplier": "Supplier",
+      "date": "Date",
+      "totalPrice": "Total Price",
+      "item": "Item",
+      "orderUnits": "Order Units",
+      "quantity": "Quantity",
+      "pricePerUnit": "Price / Unit",
+      "total": "Total",
+      "editPurchase": "Edit Purchase"
+    },
+    "form": {
+      "createTitle": "Create Purchase",
+      "supplier": "Supplier",
+      "date": "Date",
+      "ingredient": "Ingredient",
+      "orderUnits": "Order Units (optional)",
+      "quantity": "Quantity",
+      "totalPrice": "Total Price",
+      "canonicalUnit": "Unit",
+      "addItem": "Add Item",
+      "remove": "Remove",
+      "create": "Create Purchase",
+      "creating": "Creating...",
+      "newIngredient": "New ingredient",
+      "errors": {
+        "supplierRequired": "Supplier is required.",
+        "dateRequired": "Date is required.",
+        "ingredientRequired": "Ingredient is required.",
+        "quantityPositive": "Quantity must be greater than zero.",
+        "totalPricePositive": "Total price must be greater than zero.",
+        "unitRequired": "Unit is required for a new ingredient.",
+        "createFailed": "Failed to create purchase.",
+        "reasonRequired": "Correction reason is required.",
+        "existingIngredientRequired": "An existing raw ingredient is required.",
+        "updateFailed": "Failed to update purchase."
+      },
+      "editTitle": "Edit Purchase",
+      "correctionReason": "Correction Reason",
+      "saveChanges": "Save Changes",
+      "updating": "Updating..."
+    }
   }
 }
