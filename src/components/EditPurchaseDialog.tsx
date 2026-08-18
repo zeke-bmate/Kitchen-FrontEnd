@@ -15,6 +15,8 @@ import {
   Stack,
   TextField,
   Autocomplete,
+  Divider,
+  Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import CloseIcon from "@mui/icons-material/Close";
@@ -63,6 +65,7 @@ function EditPurchaseDialog({
   const { t } = useTranslation(); 
   const [supplierId, setSupplierId] = useState("");
   const [date, setDate] = useState("");
+  const [taxRate, setTaxRate] = useState("0");
   const [reason, setReason] = useState("");
   const [purchaseItems, setPurchaseItems] = useState<
     PurchaseItemInput[]
@@ -73,11 +76,25 @@ function EditPurchaseDialog({
     useState<string | null>(null);
   const [reasonError, setReasonError] =
     useState<string | null>(null);
+    const [taxRateError, setTaxRateError] =
+  useState<string | null>(null);
   const [formError, setFormError] =
     useState<string | null>(null);
   const [purchaseItemErrors, setPurchaseItemErrors] =
     useState<PurchaseItemError[]>([]);
   const [submitting, setSubmitting] = useState(false);
+
+  const subtotal = purchaseItems.reduce((sum, item) => {
+    const itemTotal = Number(item.totalPrice);
+    
+    return sum + (Number.isNaN(itemTotal) ? 0 : itemTotal);
+  }, 0);
+  
+  const taxRateNum = Number(taxRate);
+  
+  const taxAmount = Math.round(subtotal * ((Number.isNaN(taxRateNum) ? 0 : taxRateNum) / 100) * 100) / 100;
+  
+  const total = Math.round((subtotal + taxAmount) * 100) / 100;
 
   const handleAddItemClick = () => {
     setPurchaseItems((previousItems) => [
@@ -108,6 +125,8 @@ function EditPurchaseDialog({
       setDate(
         new Date(purchase.date).toISOString().split("T")[0]
       );
+
+      setTaxRate(String(purchase.taxRate ?? 0));
   
       setReason("");
   
@@ -123,6 +142,7 @@ function EditPurchaseDialog({
       setSupplierError(null);
       setDateError(null);
       setReasonError(null);
+      setTaxRateError(null);
       setFormError(null);
       setPurchaseItemErrors([]);
   },[open, purchase]);
@@ -139,6 +159,7 @@ function EditPurchaseDialog({
     setSupplierError(null);
     setDateError(null);
     setReasonError(null);
+    setTaxRateError(null);
     setFormError(null);
     setPurchaseItemErrors([]);
   
@@ -154,6 +175,18 @@ function EditPurchaseDialog({
   
     if (!date) {
       setDateError(t("purchases.form.errors.dateRequired"));
+      hasErrors = true;
+    }
+
+    if (
+      taxRate.trim() === "" ||
+      !Number.isFinite(taxRateNum) ||
+      taxRateNum < 0 ||
+      taxRateNum > 100
+    ) {
+      setTaxRateError(
+        t("purchases.form.errors.taxRateInvalid")
+      );
       hasErrors = true;
     }
   
@@ -209,6 +242,7 @@ function EditPurchaseDialog({
     const data = {
       supplierId: trimmedSupplierId,
       date,
+      taxRate: taxRateNum,
       reason: trimmedReason,
       items: purchaseItems.map((item) => ({
         rawIngredientId: item.rawIngredientId,
@@ -286,7 +320,7 @@ return (
       </IconButton>
   
       <DialogContent>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
           <Stack direction="row" spacing={5} sx={{ mb: 3 }}>
             <FormControl error={!!supplierError} sx={{ minWidth: 200 }}>
               <InputLabel id="edit-supplier-select-label">
@@ -332,6 +366,32 @@ return (
               slotProps={{
                 inputLabel: {
                   shrink: true,
+                },
+              }}
+            />
+            <TextField
+              type="number"
+              label={t("purchases.form.taxRate")}
+              value={taxRate}
+              onChange={(event) => {
+                setTaxRateError(null);
+                setTaxRate(event.target.value);
+              }}
+              error={!!taxRateError}
+              helperText={taxRateError ?? ""}
+              sx={{ width: 180 }}
+              slotProps={{
+                htmlInput: {
+                  min: 0,
+                  max: 100,
+                  step: "any",
+                },
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      %
+                    </InputAdornment>
+                  ),
                 },
               }}
             />
@@ -527,6 +587,62 @@ return (
             >
               {t("purchases.form.addItem")}
             </Button>
+          </Box>
+
+          <Box
+            sx={{
+              ml: "auto",
+              width: 320,
+              mb: 3,
+              p: 2,
+              border: "1px solid",
+              borderColor: "divider",
+              borderRadius: 2,
+            }}
+          >
+            <Stack spacing={1}>
+              <Stack
+                direction="row"
+                sx={{ justifyContent: "space-between" }}
+              >
+                <Typography>
+                  {t("purchases.form.subtotal")}
+                </Typography>
+          
+                <Typography>
+                  ₡{subtotal.toFixed(2)}
+                </Typography>
+              </Stack>
+          
+              <Stack
+                direction="row"
+                sx={{ justifyContent: "space-between" }}
+              >
+                <Typography>
+                  {t("purchases.form.tax")} (
+                  {Number.isNaN(taxRateNum) ? 0 : taxRateNum}%)
+                </Typography>
+                  
+                <Typography>
+                  ₡{taxAmount.toFixed(2)}
+                </Typography>
+              </Stack>
+                  
+              <Divider />
+                  
+              <Stack
+                direction="row"
+                sx={{ justifyContent: "space-between" }}
+              >
+                <Typography sx={{ fontWeight: 700 }}>
+                  {t("purchases.form.grandTotal")}
+                </Typography>
+                  
+                <Typography sx={{ fontWeight: 700 }}>
+                  ₡{total.toFixed(2)}
+                </Typography>
+              </Stack>
+            </Stack>
           </Box>
   
           <Box

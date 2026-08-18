@@ -15,6 +15,8 @@ import {
   Stack,
   TextField,
   Autocomplete,
+  Divider,
+  Typography,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import CloseIcon from "@mui/icons-material/Close";
@@ -76,8 +78,10 @@ function CreatePurchaseDialog({
   const draft = getPurchaseDraft();
   const [supplierId, setSupplierId] = useState<string>(draft?.supplierId ?? "");
   const [date, setDate] = useState<string>(draft?.date ?? "");
+  const [taxRate, setTaxRate] = useState<string>(String(draft?.taxRate ?? 0));
   const [supplierError, setSupplierError] = useState<string | null>(null);
   const [dateError, setDateError] = useState<string | null>(null);
+  const [taxRateError, setTaxRateError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [purchaseItems, setPurchaseItems] = useState<PurchaseItemInput[]>(
@@ -95,6 +99,18 @@ function CreatePurchaseDialog({
     PurchaseItemError[]
   >([]);
 
+  const subtotal = purchaseItems.reduce((sum, item) => {
+    const itemTotal = Number(item.totalPrice);
+
+    return sum + (Number.isNaN(itemTotal) ? 0 : itemTotal);
+  }, 0);
+
+  const taxRateNum = Number(taxRate);
+
+  const taxAmount = Math.round(subtotal * ((Number.isNaN(taxRateNum) ? 0 : taxRateNum) / 100) * 100) / 100;
+
+  const total = Math.round((subtotal + taxAmount) * 100) / 100;
+  
   const handleAddItemClick = () => {
     setPurchaseItems((previousItems) => [
       ...previousItems,
@@ -161,6 +177,7 @@ function CreatePurchaseDialog({
     const draft = {
       supplierId,
       date,
+      taxRate,
       purchaseItems,
     };
   
@@ -168,7 +185,7 @@ function CreatePurchaseDialog({
       "purchaseDraft",
       JSON.stringify(draft),
     );
-  }, [supplierId, date, purchaseItems]);
+  }, [supplierId, date, taxRate, purchaseItems]);
 
   const handleIngredientChange = (
     index: number,
@@ -240,6 +257,7 @@ function CreatePurchaseDialog({
     const trimmedSupplierId = supplierId.trim();
     setSupplierError(null);
     setDateError(null);
+    setTaxRateError(null);
     setFormError(null);
     if (!trimmedSupplierId) {
       setSupplierError(t("purchases.form.errors.supplierRequired"));
@@ -247,6 +265,14 @@ function CreatePurchaseDialog({
     }
     if (!date) {
       setDateError(t("purchases.form.errors.dateRequired"));
+      return;
+    }
+    if (
+      Number.isNaN(taxRateNum) ||
+      taxRateNum < 0 ||
+      taxRateNum > 100
+    ) {
+      setTaxRateError(t("purchases.form.errors.taxRateInvalid"));
       return;
     }
 
@@ -301,6 +327,7 @@ function CreatePurchaseDialog({
     const data = {
       supplierId: trimmedSupplierId,
       date,
+      taxRate: taxRateNum,
       items: purchaseItems.map((item) => ({
         ...item,
         quantity: Number(item.quantity),
@@ -327,6 +354,7 @@ function CreatePurchaseDialog({
       onClose();
       setSupplierId("");
       setDate("");
+      setTaxRate("0");
       setPurchaseItems([
         {
           orderUnits: "",
@@ -376,7 +404,7 @@ function CreatePurchaseDialog({
         <CloseIcon />
       </IconButton>
       <DialogContent>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
           <Stack direction="row" spacing={5} sx={{ mb: 3 }}>
             <FormControl error={!!supplierError} sx={{ minWidth: 200 }}>
               <InputLabel id="supplier-select-label">{t("purchases.form.supplier")}</InputLabel>
@@ -406,6 +434,32 @@ function CreatePurchaseDialog({
               slotProps={{
                 inputLabel: {
                   shrink: true,
+                },
+              }}
+            />
+            <TextField
+              type="number"
+              label={t("purchases.form.taxRate")}
+              value={taxRate}
+              onChange={(event) => {
+                setTaxRateError(null);
+                setTaxRate(event.target.value);
+              }}
+              error={!!taxRateError}
+              helperText={taxRateError ?? ""}
+              sx={{ width: 180 }}
+              slotProps={{
+                htmlInput: {
+                  min: 0,
+                  max: 100,
+                  step: "any",
+                },
+                input: {
+                  endAdornment: (
+                    <InputAdornment position="end">
+                      %
+                    </InputAdornment>
+                  ),
                 },
               }}
             />
@@ -565,6 +619,58 @@ function CreatePurchaseDialog({
             <Button type="button" onClick={handleAddItemClick}>
               {t("purchases.form.addItem")}
             </Button>
+          </Box>
+          <Box
+            sx={{
+              ml: "auto",
+              width: 320,
+              mb: 3,
+              p: 2,
+              border: "1px solid",
+              borderColor: "divider",
+              borderRadius: 2,
+            }}
+          >
+            <Stack spacing={1}>
+              <Stack
+                direction="row"
+                sx={{ justifyContent: "space-between" }}
+              >
+                <Typography>{t("purchases.form.subtotal")}</Typography>
+          
+                <Typography>
+                  ₡{subtotal.toFixed(2)}
+                </Typography>
+              </Stack>
+          
+              <Stack
+                direction="row"
+                sx={{ justifyContent: "space-between" }}
+              >
+                <Typography>
+                  {t("purchases.form.tax")} ({Number.isNaN(taxRateNum) ? 0 : taxRateNum}%)
+                </Typography>
+          
+                <Typography>
+                  ₡{taxAmount.toFixed(2)}
+                </Typography>
+              </Stack>
+          
+              <Divider />
+          
+              <Stack
+                direction="row"
+                sx={{ justifyContent: "space-between" }}
+              >
+                <Typography sx={{ fontWeight: 700 }}>
+                  {t("purchases.form.grandTotal")}
+                </Typography>
+          
+                <Typography sx={{ fontWeight: 700 }}>
+                  ₡{total.toFixed(2)}
+                </Typography>
+              </Stack>
+            </Stack>
           </Box>
           <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
             <Button type="submit" variant="contained" disabled={submitting}>
