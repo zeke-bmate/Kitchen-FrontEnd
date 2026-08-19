@@ -24,6 +24,7 @@ import type { Recipe } from "../types/recipe";
 import type { IngredientError } from "../types/ingredientError";
 import apiFetch from "../api/apiFetch";
 import type { MeasurementUnit } from "../types/measurementUnit";
+import { useTranslation } from "react-i18next";
 
 const formatUnit = (unit: MeasurementUnit) => {
   switch (unit) {
@@ -51,6 +52,7 @@ function CreateRecipeDialog({
   onClose,
   onRecipeCreated,
 }: CreateRecipeDialogProps) {
+  const { t } = useTranslation();
   const [name, setName] = useState<string>("");
   const [servings, setServings] = useState<string>("");
   const [rawIngredients, setRawIngredients] = useState<RawIngredient[]>([]);
@@ -75,7 +77,7 @@ function CreateRecipeDialog({
       try {
         const response = await apiFetch("/api/raw-ingredients");
         if (!response.ok) {
-          throw new Error("Network response was not ok");
+          throw new Error(t("common.errors.networkError"));
         }
         const data = await response.json();
         setRawIngredients(data);
@@ -83,7 +85,7 @@ function CreateRecipeDialog({
         if (error instanceof Error) {
           setError(error.message);
         } else {
-          setError("Failed to load Raw Ingredient Data");
+          setError(t("recipes.form.errors.ingredientsLoadFailed"));
         }
       } finally {
         setRawIngredientsLoading(false);
@@ -91,7 +93,7 @@ function CreateRecipeDialog({
     };
 
     fetchRawIngredientsData();
-  }, []);
+  }, [t]);
 
   const handleAddIngredientClick = () => {
     setIngredients((previousIngredients) => [
@@ -139,11 +141,11 @@ function CreateRecipeDialog({
     setServingsError(null);
     setFormError(null);
     if (!trimmedName) {
-      setNameError("Recipe name must be a non empty string.");
+      setNameError(t("recipes.form.errors.nameRequired"));
       return;
     }
     if (Number.isNaN(servingsNum) || servingsNum <= 0) {
-      setServingsError("Servings must be a positive number greater than zero.");
+      setServingsError(t("recipes.form.errors.servingsPositive"));
       return;
     }
 
@@ -163,12 +165,12 @@ function CreateRecipeDialog({
       const quantityNum  = Number(ingredients[i].quantity);
       if (!trimmedIngredientId) {
         newErrors[i].rawIngredientId =
-          "Raw Ingredient ID must be a non empty string.";
+          t("recipes.form.errors.ingredientRequired");
         hasErrors = true;
       }
       if (Number.isNaN(quantityNum) || quantityNum <= 0) {
         newErrors[i].quantity =
-          "Quantity must be a positive number greater than zero.";
+          t("recipes.form.errors.quantityPositive");
         hasErrors = true;
       }
     }
@@ -197,7 +199,7 @@ function CreateRecipeDialog({
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to create recipe");
+        throw new Error(errorData.error || t("recipes.form.errors.createFailed"));
       }
       const createdRecipe = await response.json();
 
@@ -216,7 +218,7 @@ function CreateRecipeDialog({
       if (error instanceof Error) {
         setFormError(error.message);
       } else {
-        setFormError("Failed to create recipe.");
+        setFormError(t("recipes.form.errors.createFailed"));
       }
     } finally {
       setSubmitting(false);
@@ -237,7 +239,7 @@ function CreateRecipeDialog({
         },
       }}
     >
-      <DialogTitle sx={{ fontWeight: 700, pr: 6 }}>New Recipe</DialogTitle>
+      <DialogTitle sx={{ fontWeight: 700, pr: 6 }}>{t("recipes.form.newRecipe")}</DialogTitle>
       <IconButton
         aria-label="close"
         onClick={onClose}
@@ -251,6 +253,11 @@ function CreateRecipeDialog({
         <CloseIcon />
       </IconButton>
       <DialogContent>
+        {error && (
+          <Alert severity="error" sx={{ mb: 2 }}>
+            {error}
+          </Alert>
+        )}
         <form onSubmit={handleSubmit}>
           <Box
             sx={{
@@ -266,25 +273,25 @@ function CreateRecipeDialog({
               color="text.secondary"
               sx={{ mb: 2 }}
             >
-              Recipe Information
+              {t("recipes.form.recipeInformation")}
             </Typography>
             <Stack direction="row" spacing={3}>
               <TextField
                 error={!!nameError}
                 helperText={nameError ? nameError : ""}
-                label="Name"
+                label={t("recipes.form.name")}
                 value={name}
                 onChange={handleNameChange}
               />
               <TextField
                 error={!!servingsError}
                 helperText={servingsError ? servingsError : ""}
-                label="Servings"
+                label={t("recipes.form.servings")}
                 value={servings}
                 slotProps={{
                   input: {
                     endAdornment: (
-                      <InputAdornment position="end">servings</InputAdornment>
+                      <InputAdornment position="end">{t("recipes.form.servingsUnit")}</InputAdornment>
                     ),
                   },
                 }}
@@ -314,7 +321,7 @@ function CreateRecipeDialog({
                 color="text.secondary"
                 sx={{ mb: 2 }}
               >
-                Item {index + 1}
+                {t("recipes.form.item")} {index + 1}
               </Typography>
               <Stack
                 direction="row"
@@ -329,13 +336,14 @@ function CreateRecipeDialog({
                   error={!!ingredientErrors[index]?.rawIngredientId}
                   sx={{ minWidth: 200 }}
                 >
-                  <InputLabel id="raw-ingredient-select-label">
-                    Raw Ingredient
+                  <InputLabel id={`raw-ingredient-select-label-${index}`}>
+                    {t("recipes.form.rawIngredient")}
                   </InputLabel>
                   <Select
+                    disabled={rawIngredientsLoading}
                     value={ingredient?.rawIngredientId}
-                    label="Raw Ingredient"
-                    labelId="raw-ingredient-select-label"
+                    label={t("recipes.form.rawIngredient")}
+                    labelId={`raw-ingredient-select-label-${index}`}
                     onChange={(event) =>
                       handleRawIngredientChange(index, event)
                     }
@@ -361,7 +369,7 @@ function CreateRecipeDialog({
                   onChange={(event) =>
                     handleQuantityChange(index, event)
                   }
-                  label="Quantity"
+                  label={t("recipes.form.quantity")}
                   slotProps={{
                     htmlInput: {
                       step: "any",
@@ -382,7 +390,7 @@ function CreateRecipeDialog({
                     type="button"
                     onClick={() => handleRemoveIngredientClick(index)}
                   >
-                    Remove
+                    {t("recipes.form.remove")}
                   </Button>
                 )}
               </Stack>
@@ -390,8 +398,8 @@ function CreateRecipeDialog({
             );
           })}
           <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
-            <Button type="button" onClick={handleAddIngredientClick}>
-              + Add Ingredient
+            <Button type="button" onClick={handleAddIngredientClick} disabled={rawIngredientsLoading}>
+              + {t("recipes.form.addIngredient")}
             </Button>
           </Box>
           <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
@@ -401,7 +409,7 @@ function CreateRecipeDialog({
               disabled={submitting}
               sx={{ alignItems: "flex-end" }}
             >
-              {submitting ? "Creating..." : "Create Recipe"}
+              {submitting ? t("recipes.form.creating") : t("recipes.form.createRecipe")}
             </Button>
           </Box>
         </form>

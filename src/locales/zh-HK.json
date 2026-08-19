@@ -113,6 +113,57 @@
       "total": "總計"
     }
   },
+  "recipes": {
+    "title": "食譜",
+    "subtitle": "依份量管理食譜。",
+    "createRecipe": "新增食譜",
+    "loading": "載入中...",
+    "empty": "找不到食譜。",
+    "table": {
+      "recipe": "食譜",
+      "servings": "份量",
+      "createdAt": "建立日期",
+      "ingredientCount": "原料數量"
+    },
+    "details": {
+      "titleSuffix": "食譜",
+      "servings": "份量",
+      "totalCost": "總成本",
+      "costPerServing": "每份成本",
+      "ingredient": "原料",
+      "quantity": "數量",
+      "pricePerUnit": "單價",
+      "cost": "成本",
+      "latestPurchase": "最近採購",
+      "missingCostWarning": "部分原料因沒有採購記錄而無法取得成本資料。"
+    },
+    "errors": {
+      "loadFailed": "無法載入食譜。",
+      "costLoadFailed": "無法載入食譜成本。"
+    },
+    "form": {
+      "newRecipe": "新增食譜",
+      "recipeInformation": "食譜資訊",
+      "name": "名稱",
+      "servings": "份量",
+      "servingsUnit": "份",
+      "item": "品項",
+      "rawIngredient": "原料",
+      "quantity": "數量",
+      "remove": "移除",
+      "addIngredient": "新增原料",
+      "createRecipe": "新增食譜",
+      "creating": "新增中...",
+      "errors": {
+        "nameRequired": "請輸入食譜名稱。",
+        "servingsPositive": "份量必須大於零。",
+        "ingredientRequired": "請選擇原料。",
+        "quantityPositive": "數量必須大於零。",
+        "createFailed": "無法新增食譜。",
+        "ingredientsLoadFailed": "無法載入原料。"
+      }
+    }
+  },
   "common": {
     "errors": {
       "networkError": "無法連線至伺服器。"

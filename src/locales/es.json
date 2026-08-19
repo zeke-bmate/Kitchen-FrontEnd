@@ -113,6 +113,57 @@
       "total": "Total"
     }
   },
+  "recipes": {
+    "title": "Recetas",
+    "subtitle": "Registra las recetas por porciones.",
+    "createRecipe": "Crear receta",
+    "loading": "Cargando...",
+    "empty": "No se encontraron recetas.",
+    "table": {
+      "recipe": "Receta",
+      "servings": "Porciones",
+      "createdAt": "Fecha de creación",
+      "ingredientCount": "Cantidad de ingredientes"
+    },
+    "details": {
+      "titleSuffix": "Receta",
+      "servings": "Porciones",
+      "totalCost": "Costo total",
+      "costPerServing": "Costo por porción",
+      "ingredient": "Ingrediente",
+      "quantity": "Cantidad",
+      "pricePerUnit": "Precio / unidad",
+      "cost": "Costo",
+      "latestPurchase": "Última compra",
+      "missingCostWarning": "Algunos costos de ingredientes no están disponibles porque no existe historial de compras."
+    },
+    "errors": {
+      "loadFailed": "No se pudieron cargar las recetas.",
+      "costLoadFailed": "No se pudo cargar el costo de la receta."
+    },
+    "form": {
+      "newRecipe": "Nueva receta",
+      "recipeInformation": "Información de la receta",
+      "name": "Nombre",
+      "servings": "Porciones",
+      "servingsUnit": "porciones",
+      "item": "Artículo",
+      "rawIngredient": "Ingrediente",
+      "quantity": "Cantidad",
+      "remove": "Eliminar",
+      "addIngredient": "Agregar ingrediente",
+      "createRecipe": "Crear receta",
+      "creating": "Creando...",
+      "errors": {
+        "nameRequired": "El nombre de la receta es obligatorio.",
+        "servingsPositive": "Las porciones deben ser mayores que cero.",
+        "ingredientRequired": "El ingrediente es obligatorio.",
+        "quantityPositive": "La cantidad debe ser mayor que cero.",
+        "createFailed": "No se pudo crear la receta.",
+        "ingredientsLoadFailed": "No se pudieron cargar los ingredientes."
+      }
+    }
+  },
   "common": {
     "errors": {
       "networkError": "No se pudo conectar con el servidor."
