@@ -114,6 +114,57 @@
       "total": "Total"
     }
   },
+  "recipes": {
+    "title": "Recipes",
+    "subtitle": "Track recipes by servings.",
+    "createRecipe": "Create Recipe",
+    "loading": "Loading...",
+    "empty": "No recipes found.",
+    "table": {
+      "recipe": "Recipe",
+      "servings": "Servings",
+      "createdAt": "Created At",
+      "ingredientCount": "Ingredient Count"
+    },
+    "details": {
+      "titleSuffix": "Recipe",
+      "servings": "Servings",
+      "totalCost": "Total Cost",
+      "costPerServing": "Cost / Serving",
+      "ingredient": "Ingredient",
+      "quantity": "Quantity",
+      "pricePerUnit": "Price / Unit",
+      "cost": "Cost",
+      "latestPurchase": "Latest Purchase",
+      "missingCostWarning": "Some ingredient costs are unavailable because there is no purchase history."
+    },
+    "errors": {
+      "loadFailed": "Failed to load recipes.",
+      "costLoadFailed": "Failed to load recipe cost."
+    },
+    "form": {
+      "newRecipe": "New Recipe",
+      "recipeInformation": "Recipe Information",
+      "name": "Name",
+      "servings": "Servings",
+      "servingsUnit": "servings",
+      "item": "Item",
+      "rawIngredient": "Raw Ingredient",
+      "quantity": "Quantity",
+      "remove": "Remove",
+      "addIngredient": "Add Ingredient",
+      "createRecipe": "Create Recipe",
+      "creating": "Creating...",
+      "errors": {
+        "nameRequired": "Recipe name must be a non-empty string.",
+        "servingsPositive": "Servings must be greater than zero.",
+        "ingredientRequired": "Raw ingredient is required.",
+        "quantityPositive": "Quantity must be greater than zero.",
+        "createFailed": "Failed to create recipe.",
+        "ingredientsLoadFailed": "Failed to load raw ingredients."
+      }
+    }
+  },
   "common": {
     "errors": {
       "networkError": "Unable to connect to the server."

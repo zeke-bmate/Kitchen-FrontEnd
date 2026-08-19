@@ -10,16 +10,15 @@ import {
   TableCell,
   TableBody,
   Typography,
-  Dialog,
-  DialogContent,
-  DialogTitle,
   Button,
 } from "@mui/material";
 import RecipeDetailsDialog from "../components/RecipeDetailsDialog";
 import CreateRecipeDialog from "../components/CreateRecipeDialog";
 import apiFetch from "../api/apiFetch";
+import { useTranslation } from "react-i18next";
 
 function RecipesPage() {
+  const { t } = useTranslation();
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -54,7 +53,7 @@ function RecipesPage() {
       try {
         const response = await apiFetch("/api/recipes");
         if (!response.ok) {
-          throw new Error("Network response was not ok");
+          throw new Error(t("common.errors.networkError"));
         }
         const data = await response.json();
         setRecipes(data);
@@ -62,7 +61,7 @@ function RecipesPage() {
         if (error instanceof Error) {
           setError(error.message);
         } else {
-          setError("Failed to load Recipe Data");
+          setError(t("recipes.errors.loadFailed"));
         }
       } finally {
         setIsLoading(false);
@@ -70,29 +69,29 @@ function RecipesPage() {
     };
 
     fetchRecipesData();
-  }, []);
+  }, [t]);
 
   if (error) return <p>{error}</p>;
 
   return (
     <Box sx={{ padding: 4, maxWidth: 1000, mx: "auto" }}>
       <Typography variant="h4" sx={{ fontWeight: 700, mb: 3 }}>
-        Recipes
+        {t("recipes.title")}
       </Typography>
       <Typography variant="body1" sx={{ mb: 3 }}>
-        Track recipes by servings.
+        {t("recipes.subtitle")}
       </Typography>
       <Button
         variant="contained"
         onClick={handleCreateRecipeClick}
         sx={{ mb: 3 }}
       >
-        Create Recipe
+        {t("recipes.createRecipe")}
       </Button>
       {isLoading ? (
-        <Typography>Loading...</Typography>
+        <Typography>{t("recipes.loading")}</Typography>
       ) : recipes.length === 0 ? (
-        <Typography>No recipes found.</Typography>
+        <Typography>{t("recipes.empty")}</Typography>
       ) : (
         <TableContainer
           component={Paper}
@@ -110,7 +109,7 @@ function RecipesPage() {
                     borderBottom: "1px solid #e0e0e0",
                   }}
                 >
-                  Recipe
+                  {t("recipes.table.recipe")}
                 </TableCell>
                 <TableCell
                   align="center"
@@ -121,7 +120,7 @@ function RecipesPage() {
                     borderBottom: "1px solid #e0e0e0",
                   }}
                 >
-                  Servings
+                  {t("recipes.table.servings")}
                 </TableCell>
                 <TableCell
                   align="center"
@@ -132,7 +131,7 @@ function RecipesPage() {
                     borderBottom: "1px solid #e0e0e0",
                   }}
                 >
-                  Created At
+                  {t("recipes.table.createdAt")}
                 </TableCell>
                 <TableCell
                   align="center"
@@ -143,7 +142,7 @@ function RecipesPage() {
                     borderBottom: "1px solid #e0e0e0",
                   }}
                 >
-                  Ingredient Count
+                  {t("recipes.table.ingredientCount")}
                 </TableCell>
               </TableRow>
             </TableHead>
