@@ -66,7 +66,22 @@ function PurchaseDetailsDialog({
                         >
                         <Typography sx={{ mb:1 }}><strong>{t("purchases.details.supplier")}:</strong>  {selectedPurchase.supplier.name}</Typography>
                         <Typography sx={{ mb:1 }}><strong>{t("purchases.details.date")}:</strong> {new Date(selectedPurchase.date).toLocaleDateString()}</Typography>
-                        <Typography><strong>{t("purchases.details.totalPrice")}:</strong> ₡{selectedPurchase.totalPrice.toFixed(2)}</Typography>
+                        <Typography sx={{ mb: 1 }}>
+                          <strong>{t("purchases.details.subtotal")}:</strong>{" "}
+                          ₡{selectedPurchase.subtotal.toFixed(2)}
+                        </Typography>
+                                                
+                        <Typography sx={{ mb: 1 }}>
+                          <strong>
+                            {t("purchases.details.tax")} ({selectedPurchase.taxRate}%):
+                          </strong>{" "}
+                          ₡{selectedPurchase.taxAmount.toFixed(2)}
+                        </Typography>
+                                                
+                        <Typography>
+                          <strong>{t("purchases.details.totalPrice")}:</strong>{" "}
+                          ₡{selectedPurchase.totalPrice.toFixed(2)}
+                        </Typography>
                     </Box>
 
                     <Button
