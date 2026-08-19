@@ -19,6 +19,8 @@
       "date": "Fecha",
       "supplier": "Proveedor",
       "itemsCount": "Cantidad de artículos",
+      "subtotal": "Subtotal",
+      "tax": "Impuesto",
       "totalPrice": "Precio total"
     },
     "empty": "No se encontraron compras.",
@@ -72,6 +74,48 @@
         "existingIngredientRequired": "Se requiere un ingrediente existente.",
         "updateFailed": "No se pudo actualizar la compra."
       }
+    },
+    "summary": {
+      "purchases": "Compras",
+      "subtotal": "Subtotal",
+      "tax": "Impuesto",
+      "total": "Total"
+    },
+    "errors": {
+      "loadFailed": "No se pudieron cargar las compras."
+    }
+  },
+  "suppliers": {
+    "title": "Proveedores",
+    "subtitle": "Registra los proveedores por nombre.",
+    "name": "Nombre",
+    "createdAt": "Fecha de creación",
+    "addSupplier": "Agregar proveedor",
+    "adding": "Agregando...",
+    "loading": "Cargando...",
+    "empty": "No se encontraron proveedores.",
+    "errors": {
+      "nameRequired": "El nombre no puede estar vacío.",
+      "createFailed": "No se pudo crear el proveedor.",
+      "loadFailed": "No se pudieron cargar los proveedores."
+    },
+    "history": {
+      "title": "Historial de compras",
+      "empty": "No se encontró historial de compras.",
+      "loadFailed": "No se pudo cargar el historial de compras del proveedor.",
+      "monthlySubtotal": "Subtotal",
+      "monthlyTax": "Impuesto",
+      "monthlyTotal": "Total",
+      "date": "Fecha",
+      "items": "Artículos",
+      "subtotal": "Subtotal",
+      "tax": "Impuesto",
+      "total": "Total"
+    }
+  },
+  "common": {
+    "errors": {
+      "networkError": "No se pudo conectar con el servidor."
     }
   }
 }

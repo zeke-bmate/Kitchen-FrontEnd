@@ -20,6 +20,8 @@
       "date": "Date",
       "supplier": "Supplier",
       "itemsCount": "Items Count",
+      "subtotal": "Subtotal",
+      "tax": "Tax",
       "totalPrice": "Total Price"
     },
     "empty": "No purchases found.",
@@ -73,6 +75,48 @@
       "correctionReason": "Correction Reason",
       "saveChanges": "Save Changes",
       "updating": "Updating..."
+    },
+    "summary": {
+      "purchases": "Purchases",
+      "subtotal": "Subtotal",
+      "tax": "Tax",
+      "total": "Total"
+    },
+    "errors": {
+      "loadFailed": "Failed to load purchases."
+    }
+  },
+  "suppliers": {
+    "title": "Suppliers",
+    "subtitle": "Track suppliers by name.",
+    "name": "Name",
+    "createdAt": "Created At",
+    "addSupplier": "Add Supplier",
+    "adding": "Adding...",
+    "loading": "Loading...",
+    "empty": "No suppliers found.",
+    "errors": {
+      "nameRequired": "Name must be a non-empty string.",
+      "createFailed": "Failed to create supplier.",
+      "loadFailed": "Failed to load suppliers."
+    },
+    "history": {
+      "title": "Purchase History",
+      "empty": "No purchase history found.",
+      "loadFailed": "Failed to load supplier purchase history.",
+      "monthlySubtotal": "Subtotal",
+      "monthlyTax": "Tax",
+      "monthlyTotal": "Total",
+      "date": "Date",
+      "items": "Items",
+      "subtotal": "Subtotal",
+      "tax": "Tax",
+      "total": "Total"
+    }
+  },
+  "common": {
+    "errors": {
+      "networkError": "Unable to connect to the server."
     }
   }
 }
