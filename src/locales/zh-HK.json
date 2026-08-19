@@ -19,6 +19,8 @@
       "date": "日期",
       "supplier": "供應商",
       "itemsCount": "品項數量",
+      "subtotal": "小計",
+      "tax": "稅額",
       "totalPrice": "總價"
     },
     "empty": "找不到採購記錄。",
@@ -72,6 +74,48 @@
         "existingIngredientRequired": "請選擇現有原料。",
         "updateFailed": "無法更新採購。"
       }
+    },
+    "summary": {
+      "purchases": "採購次數",
+      "subtotal": "小計",
+      "tax": "稅額",
+      "total": "總計"
+    },
+    "errors": {
+      "loadFailed": "無法載入採購記錄。"
+    }
+  },
+  "suppliers": {
+    "title": "供應商",
+    "subtitle": "依名稱管理供應商。",
+    "name": "名稱",
+    "createdAt": "建立日期",
+    "addSupplier": "新增供應商",
+    "adding": "新增中...",
+    "loading": "載入中...",
+    "empty": "找不到供應商。",
+    "errors": {
+      "nameRequired": "名稱不可為空白。",
+      "createFailed": "無法新增供應商。",
+      "loadFailed": "無法載入供應商。"
+    },
+    "history": {
+      "title": "採購記錄",
+      "empty": "找不到採購記錄。",
+      "loadFailed": "無法載入供應商採購記錄。",
+      "monthlySubtotal": "小計",
+      "monthlyTax": "稅額",
+      "monthlyTotal": "總計",
+      "date": "日期",
+      "items": "品項",
+      "subtotal": "小計",
+      "tax": "稅額",
+      "total": "總計"
+    }
+  },
+  "common": {
+    "errors": {
+      "networkError": "無法連線至伺服器。"
     }
   }
 }

@@ -16,8 +16,13 @@ import {
   TableBody,
 } from "@mui/material";
 import apiFetch from "../api/apiFetch";
+import SupplierPurchaseHistoryDialog from "../components/SupplierPurchaseHistoryDialog";
+import PurchaseDetailsDialog from "../components/PurchaseDetailsDialog";
+import type { Purchase } from "../types/purchase";
+import { useTranslation } from "react-i18next";
 
 function SuppliersPage() {
+  const { t } = useTranslation();
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,10 +30,34 @@ function SuppliersPage() {
   const [nameError, setNameError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [selectedSupplier, setSelectedSupplier] = useState<Supplier | null>(null);
+  const [purchaseHistoryOpen, setPurchaseHistoryOpen] = useState(false);
+  const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(null);
+  const [purchaseDetailsOpen, setPurchaseDetailsOpen] = useState(false);
 
   const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setNameError(null);
     setName(event.target.value);
+  };
+
+  const handleSupplierClick = (supplier: Supplier) => {
+    setSelectedSupplier(supplier);
+    setPurchaseHistoryOpen(true);
+  };
+  
+  const handlePurchaseHistoryClose = () => {
+    setPurchaseHistoryOpen(false);
+    setSelectedSupplier(null);
+  };
+  
+  const handlePurchaseClick = (purchase: Purchase) => {
+    setSelectedPurchase(purchase);
+    setPurchaseDetailsOpen(true);
+  };
+  
+  const handlePurchaseDetailsClose = () => {
+    setPurchaseDetailsOpen(false);
+    setSelectedPurchase(null);
   };
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -37,7 +66,7 @@ function SuppliersPage() {
     setNameError(null);
     setFormError(null);
     if (!trimmedName) {
-      setNameError("Name must be a non empty string.");
+      setNameError(t("suppliers.errors.nameRequired"));
       return;
     }
     setSubmitting(true);
@@ -53,7 +82,7 @@ function SuppliersPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to create supplier");
+        throw new Error(errorData.error || t("suppliers.errors.createFailed"));
       }
 
       const createdSupplier = await response.json();
@@ -67,7 +96,7 @@ function SuppliersPage() {
       if (error instanceof Error) {
         setFormError(error.message);
       } else {
-        setFormError("Failed to create supplier.");
+        setFormError(t("suppliers.errors.createFailed"));
       }
     } finally {
       setSubmitting(false);
@@ -79,7 +108,7 @@ function SuppliersPage() {
       try {
         const response = await apiFetch("/api/suppliers");
         if (!response.ok) {
-          throw new Error("Network response was not ok");
+          throw new Error(t("common.errors.networkError"));
         }
         const data = await response.json();
         setSuppliers(data);
@@ -87,7 +116,7 @@ function SuppliersPage() {
         if (error instanceof Error) {
           setError(error.message);
         } else {
-          setError("Failed to load suppliers data");
+          setError(t("suppliers.errors.loadFailed"));
         }
       } finally {
         setIsLoading(false);
@@ -102,30 +131,30 @@ function SuppliersPage() {
   return (
     <Box sx={{ padding: 4, maxWidth: 1000, mx: "auto" }}>
       <Typography variant="h4" sx={{ fontWeight: 700, mb: 3 }}>
-        Suppliers
+        {t("suppliers.title")}
       </Typography>
       <Typography variant="body1" sx={{ mb: 3 }}>
-        Track suppliers by name.
+        {t("suppliers.subtitle")}
       </Typography>
       <form onSubmit={handleSubmit}>
         <Stack direction="row" spacing={5} sx={{ mb: 3 }}>
           <TextField
             error={!!nameError}
             helperText={nameError ? nameError : ""}
-            label="Name"
+            label={t("suppliers.name")}
             value={name}
             onChange={handleNameChange}
           />
           <Button type="submit" variant="contained" disabled={submitting}>
-            {submitting ? "Adding..." : "Add Supplier"}
+            {submitting ? t("suppliers.adding") : t("suppliers.addSupplier")}
           </Button>
         </Stack>
       </form>
       {formError && <Alert severity="error">{formError}</Alert>}
       {isLoading ? (
-        <Typography>Loading...</Typography>
+        <Typography>{t("suppliers.loading")}</Typography>
       ) : suppliers.length === 0 ? (
-        <Typography>No suppliers found.</Typography>
+        <Typography>{t("suppliers.empty")}</Typography>
       ) : (
         <TableContainer
           component={Paper}
@@ -143,7 +172,7 @@ function SuppliersPage() {
                     borderBottom: "1px solid #e0e0e0",
                   }}
                 >
-                  Name
+                  {t("suppliers.name")}
                 </TableCell>
                 <TableCell
                   align="center"
@@ -154,13 +183,18 @@ function SuppliersPage() {
                     borderBottom: "1px solid #e0e0e0",
                   }}
                 >
-                  Created At
+                  {t("suppliers.createdAt")}
                 </TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               {suppliers.map((s) => (
-                <TableRow key={s.id} hover>
+                <TableRow
+                  key={s.id}
+                  hover
+                  onClick={() => handleSupplierClick(s)}
+                  sx={{ cursor: "pointer" }}
+                >
                   <TableCell
                     align="center"
                     sx={{ borderRight: "1px solid #e0e0e0" }}
@@ -175,6 +209,23 @@ function SuppliersPage() {
             </TableBody>
           </Table>
         </TableContainer>
+      )}
+
+      {selectedSupplier && (
+        <SupplierPurchaseHistoryDialog
+          open={purchaseHistoryOpen}
+          supplier={selectedSupplier}
+          onClose={handlePurchaseHistoryClose}
+          onPurchaseClick={handlePurchaseClick}
+        />
+      )}
+
+      {selectedPurchase && (
+        <PurchaseDetailsDialog
+          selectedPurchase={selectedPurchase}
+          open={purchaseDetailsOpen}
+          onClose={handlePurchaseDetailsClose}
+        />
       )}
     </Box>
   );

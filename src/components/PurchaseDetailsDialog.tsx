@@ -1,6 +1,14 @@
 import { Dialog, DialogTitle, DialogContent, Typography, Divider, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Box, Stack, Button } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
 import { useTranslation } from "react-i18next";
+import type { Purchase } from "../types/purchase";
+
+type PurchaseDetailsDialogProps = {
+  selectedPurchase: Purchase | null;
+  open: boolean;
+  onClose: () => void;
+  onEdit?: (purchase: Purchase) => void;
+};
 
 const formatUnit = (unit) => {
   switch (unit) {
@@ -20,11 +28,11 @@ const formatUnit = (unit) => {
 };
 
 function PurchaseDetailsDialog({
-    selectedPurchase,
-    open,
-    onClose,
-    onEdit,
-}) {
+  selectedPurchase,
+  open,
+  onClose,
+  onEdit,
+}: PurchaseDetailsDialogProps) {
   const { t } = useTranslation();
     return (
         <Dialog 
@@ -84,14 +92,14 @@ function PurchaseDetailsDialog({
                         </Typography>
                     </Box>
 
-                    <Button
-                      variant="contained"
-                      onClick={() => {
-                        onEdit(selectedPurchase);
-                      }}
-                    >
-                      {t("purchases.details.editPurchase")}
-                    </Button>
+                    {onEdit && (
+                      <Button
+                        variant="contained"
+                        onClick={() => onEdit(selectedPurchase)}
+                      >
+                        {t("purchases.details.editPurchase")}
+                      </Button>
+                    )}
                 </Stack>
               <Divider sx={{ mb:2 }}/>
               <TableContainer component={Paper} sx={{ borderRadius: 3, overflow: "hidden" }}>

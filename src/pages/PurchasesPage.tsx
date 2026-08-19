@@ -1,7 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { Purchase } from "../types/purchase";
 import type { Supplier } from "../types/supplier";
-import type { PurchaseItemInput } from "../types/purchaseItemInput";
 import {
   Box,
   Typography,
@@ -13,6 +12,9 @@ import {
   TableCell,
   TableBody,
   Button,
+  Stack,
+  Divider,
+  IconButton,
 } from "@mui/material";
 import PurchaseDetailsDialog from "../components/PurchaseDetailsDialog";
 import type { RawIngredient } from "../types/rawIngredient";
@@ -20,18 +22,15 @@ import CreatePurchaseDialog from "../components/CreatePurchaseDialog";
 import apiFetch from "../api/apiFetch";
 import EditPurchaseDialog from "../components/EditPurchaseDialog";
 import { useTranslation } from "react-i18next";
+import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
+import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 
 function PurchasesPage() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
-  const [items, setItems] = useState<PurchaseItemInput[]>([]);
-  const [date, setDate] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
   const [isPurchaseLoading, setIsPurchaseLoading] = useState(true);
-  const [isSupplierLoading, setIsSupplierLoading] = useState(true);
-  const [submitting, setSubmitting] = useState(false);
-  const [formError, setFormError] = useState<string | null>(null);
   const [selectedPurchase, setSelectedPurchase] = useState<Purchase | null>(
     null,
   );
@@ -40,6 +39,7 @@ function PurchasesPage() {
   const [rawIngredients, setRawIngredients] = useState<RawIngredient[]>([]);
   const [editPurchase, setEditPurchase] = useState<Purchase | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [summaryMonthIndex, setSummaryMonthIndex] = useState(0);
 
   const handlePurchaseClick = (purchase: Purchase) => {
     setSelectedPurchase(purchase);
@@ -50,6 +50,62 @@ function PurchasesPage() {
     setDialogOpen(false);
     setSelectedPurchase(null);
   };
+  
+  const monthlyGroups = useMemo(() => {
+    const groups = new Map<
+      string,
+      {
+        key: string;
+        label: string;
+        purchases: Purchase[];
+      }
+    >();
+
+    for (const purchase of purchases) {
+      const date = new Date(purchase.date);
+
+      const key = `${date.getFullYear()}-${String(
+        date.getMonth() + 1
+      ).padStart(2, "0")}`;
+
+      if (!groups.has(key)) {
+        groups.set(key, {
+          key,
+          label: date.toLocaleDateString(i18n.language, {
+            month: "long",
+            year: "numeric",
+          }),
+          purchases: [],
+        });
+      }
+
+      groups.get(key)!.purchases.push(purchase);
+    }
+
+    return Array.from(groups.values()).sort(
+      (a, b) => b.key.localeCompare(a.key)
+    );
+  }, [purchases, i18n.language]);
+
+  const selectedMonth = monthlyGroups[summaryMonthIndex] ?? null;
+
+  const monthlySubtotal =
+    selectedMonth?.purchases.reduce(
+      (sum, purchase) => sum + purchase.subtotal,
+      0
+    ) ?? 0;
+  
+  const monthlyTax =
+    selectedMonth?.purchases.reduce(
+      (sum, purchase) => sum + purchase.taxAmount,
+      0
+    ) ?? 0;
+  
+  const monthlyTotal =
+    selectedMonth?.purchases.reduce(
+      (sum, purchase) => sum + purchase.totalPrice,
+      0
+    ) ?? 0;
 
   const handlePurchaseCreated = (
     createdPurchase: Purchase
@@ -123,7 +179,7 @@ function PurchasesPage() {
       try {
         const response = await apiFetch("/api/purchases");
         if (!response.ok) {
-          throw new Error("Network response was not ok");
+          throw new Error(t("common.errors.networkError"));
         }
         const data = await response.json();
         setPurchases(data);
@@ -131,7 +187,7 @@ function PurchasesPage() {
         if (error instanceof Error) {
           setError(error.message);
         } else {
-          setError("Failed to load Purchase Data");
+          setError(t("purchases.errors.loadFailed"));
         }
       } finally {
         setIsPurchaseLoading(false);
@@ -146,7 +202,7 @@ function PurchasesPage() {
       try {
         const response = await apiFetch("/api/suppliers");
         if (!response.ok) {
-          throw new Error("Network response was not ok");
+          throw new Error(t("common.errors.networkError"));
         }
         const data = await response.json();
         setSuppliers(data);
@@ -154,10 +210,8 @@ function PurchasesPage() {
         if (error instanceof Error) {
           setError(error.message);
         } else {
-          setError("Failed to load supplier Data");
+          setError(t("suppliers.errors.loadFailed"));
         }
-      } finally {
-        setIsSupplierLoading(false);
       }
     };
 
@@ -195,19 +249,145 @@ function PurchasesPage() {
 
   return (
     <Box sx={{ padding: 4, maxWidth: 1000, mx: "auto" }}>
-      <Typography variant="h4" sx={{ fontWeight: 700, mb: 3 }}>
-        {t("purchases.title")}
-      </Typography>
-      <Typography variant="body1" sx={{ mb: 3 }}>
-        {t("purchases.subtitle")}
-      </Typography>
-      <Button
-        variant="contained"
-        onClick={handleCreatePurchaseClick}
-        sx={{ mb: 3 }}
+      <Stack
+        direction="row"
+        spacing={4}
+        sx={{
+          mb: 3,
+          justifyContent: "space-between",
+          alignItems: "flex-start",
+        }}
       >
-        {t("purchases.createPurchase")}
-      </Button>
+        <Box>
+          <Typography
+            variant="h4"
+            sx={{
+              fontWeight: 700,
+              mb: 3,
+            }}
+          >
+            {t("purchases.title")}
+          </Typography>
+          
+          <Typography
+            variant="body1"
+            sx={{
+              mb: 3,
+            }}
+          >
+            {t("purchases.subtitle")}
+          </Typography>
+          
+          <Button
+            variant="contained"
+            onClick={handleCreatePurchaseClick}
+          >
+            {t("purchases.createPurchase")}
+          </Button>
+        </Box>
+          
+        {selectedMonth && (
+          <Paper
+            sx={{
+              p: 2,
+              width: 300,
+              borderRadius: 3,
+            }}
+          >
+            <Stack
+              direction="row"
+              sx={{
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 2,
+              }}
+            >
+              <IconButton
+                disabled={
+                  summaryMonthIndex >= monthlyGroups.length - 1
+                }
+                onClick={() =>
+                  setSummaryMonthIndex((index) => index + 1)
+                }
+              >
+                <ChevronLeftIcon />
+              </IconButton>
+              
+              <Typography sx={{ fontWeight: 700 }}>
+                {selectedMonth.label}
+              </Typography>
+              
+              <IconButton
+                disabled={summaryMonthIndex === 0}
+                onClick={() =>
+                  setSummaryMonthIndex((index) => index - 1)
+                }
+              >
+                <ChevronRightIcon />
+              </IconButton>
+            </Stack>
+              
+            <Stack spacing={1}>
+              <Stack
+                direction="row"
+                sx={{
+                  justifyContent: "space-between",
+                }}
+              >
+                <Typography>{t("purchases.summary.purchases")}</Typography>
+              
+                <Typography>
+                  {selectedMonth.purchases.length}
+                </Typography>
+              </Stack>
+              
+              <Stack
+                direction="row"
+                sx={{
+                  justifyContent: "space-between",
+                }}
+              >
+                <Typography>{t("purchases.summary.subtotal")}</Typography>
+              
+                <Typography>
+                  ₡{monthlySubtotal.toFixed(2)}
+                </Typography>
+              </Stack>
+              
+              <Stack
+                direction="row"
+                sx={{
+                  justifyContent: "space-between",
+                }}
+              >
+                <Typography>{t("purchases.summary.tax")}</Typography>
+              
+                <Typography>
+                  ₡{monthlyTax.toFixed(2)}
+                </Typography>
+              </Stack>
+              
+              <Divider />
+              
+              <Stack
+                direction="row"
+                sx={{
+                  justifyContent: "space-between",
+                }}
+              >
+                <Typography sx={{ fontWeight: 700 }}>
+                  {t("purchases.summary.total")}
+                </Typography>
+              
+                <Typography sx={{ fontWeight: 700 }}>
+                  ₡{monthlyTotal.toFixed(2)}
+                </Typography>
+              </Stack>
+            </Stack>
+          </Paper>
+        )}
+      </Stack>
+
       {isPurchaseLoading ? (
         <Typography>{t("purchases.loading")}</Typography>
       ) : purchases.length === 0 ? (
@@ -262,6 +442,28 @@ function PurchasesPage() {
                     borderBottom: "1px solid #e0e0e0",
                   }}
                 >
+                  {t("purchases.table.subtotal")}
+                </TableCell>
+                <TableCell
+                  align="center"
+                  sx={{
+                    color: "white",
+                    fontWeight: 700,
+                    backgroundColor: "primary.main",
+                    borderBottom: "1px solid #e0e0e0",
+                  }}
+                >
+                  {t("purchases.table.tax")}
+                </TableCell>
+                <TableCell
+                  align="center"
+                  sx={{
+                    color: "white",
+                    fontWeight: 700,
+                    backgroundColor: "primary.main",
+                    borderBottom: "1px solid #e0e0e0",
+                  }}
+                >
                   {t("purchases.table.totalPrice")}
                 </TableCell>
               </TableRow>
@@ -292,6 +494,8 @@ function PurchasesPage() {
                   >
                     {p.items.length}
                   </TableCell>
+                  <TableCell align="center" sx={{ borderRight: "1px solid #e0e0e0" }}>{`₡${p.subtotal.toFixed(2)}`}</TableCell>
+                  <TableCell align="center" sx={{ borderRight: "1px solid #e0e0e0" }}>{`₡${p.taxAmount.toFixed(2)}`}</TableCell>
                   <TableCell align="center">{`₡${p.totalPrice.toFixed(2)}`}</TableCell>
                 </TableRow>
               ))}
