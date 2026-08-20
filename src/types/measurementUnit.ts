@@ -3,4 +3,9 @@ export type MeasurementUnit =
   | "L"
   | "EACH"
   | "BUNCH"
-  | "HEAD";
+  | "HEAD"
+  | "BOX"
+  | "CASE"
+  | "PACK"
+  | "ROLL"
+  | "BOTTLE";

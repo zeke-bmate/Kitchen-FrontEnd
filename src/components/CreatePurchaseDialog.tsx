@@ -28,6 +28,7 @@ import type { RawIngredient } from "../types/rawIngredient";
 import apiFetch from "../api/apiFetch";
 import type { MeasurementUnit } from "../types/measurementUnit";
 import { useTranslation } from "react-i18next";
+import type { SupplyItem } from "../types/supplyItem";
 
 const formatUnit = (unit: MeasurementUnit) => {
   switch (unit) {
@@ -41,6 +42,16 @@ const formatUnit = (unit: MeasurementUnit) => {
       return "bunch";
     case "HEAD":
       return "head";
+    case "BOX":
+      return "box";
+    case "CASE":
+      return "case";
+    case "PACK":
+      return "pack";
+    case "ROLL":
+      return "roll";
+    case "BOTTLE":
+      return "bottle";
   }
 };
 
@@ -50,6 +61,7 @@ type CreatePurchaseDialogProps = {
   onPurchaseCreated: (purchase: Purchase) => void;
   suppliers: Supplier[];
   rawIngredients: RawIngredient[];
+  supplyItems: SupplyItem[];
 };
 
 const getPurchaseDraft = () => {
@@ -73,6 +85,7 @@ function CreatePurchaseDialog({
   onPurchaseCreated,
   suppliers,
   rawIngredients,
+  supplyItems,
 }: CreatePurchaseDialogProps) {
   const { t } = useTranslation();
   const draft = getPurchaseDraft();
@@ -86,9 +99,13 @@ function CreatePurchaseDialog({
   const [submitting, setSubmitting] = useState(false);
   const [purchaseItems, setPurchaseItems] = useState<PurchaseItemInput[]>(
     draft?.purchaseItems?.length
-      ? draft.purchaseItems
+      ? draft.purchaseItems.map((item: PurchaseItemInput) => ({
+          ...item,
+          itemType: item.itemType ?? "INGREDIENT",
+        }))
       : [
           {
+            itemType: "INGREDIENT",
             orderUnits: "",
             quantity: "",
             totalPrice: "",
@@ -115,6 +132,7 @@ function CreatePurchaseDialog({
     setPurchaseItems((previousItems) => [
       ...previousItems,
       {
+        itemType: "INGREDIENT",
         orderUnits: "",
         quantity: "",
         totalPrice: "",
@@ -170,6 +188,26 @@ function CreatePurchaseDialog({
             }
           : item
       )
+    );
+  };
+
+  const handleItemTypeChange = (
+    index: number,
+    itemType: "INGREDIENT" | "SUPPLY",
+  ) => {
+    setPurchaseItems((previousItems) =>
+      previousItems.map((item, itemIndex) => {
+        if (itemIndex !== index) {
+          return item;
+        }
+
+        return {
+          itemType,
+          orderUnits: item.orderUnits,
+          quantity: item.quantity,
+          totalPrice: item.totalPrice,
+        };
+      })
     );
   };
 
@@ -252,6 +290,71 @@ function CreatePurchaseDialog({
     );
   };
 
+  const handleSupplyItemChange = (
+    index: number,
+    value: SupplyItem | string | null,
+  ) => {
+    setPurchaseItems((previousItems) =>
+      previousItems.map((item, itemIndex) => {
+        if (itemIndex !== index) {
+          return item;
+        }
+
+        if (typeof value === "string") {
+          const normalizedValue = value.trim().toLowerCase();
+
+          const existingSupplyItem = supplyItems.find(
+            (supplyItem) =>
+              supplyItem.name.trim().toLowerCase() === normalizedValue
+          );
+
+          if (existingSupplyItem) {
+            const {
+              newSupplyItemName,
+              canonicalUnit,
+              ...rest
+            } = item;
+
+            return {
+              ...rest,
+              supplyItemId: existingSupplyItem.id,
+            };
+          }
+
+          const { supplyItemId, ...rest } = item;
+
+          return {
+            ...rest,
+            newSupplyItemName: value,
+            canonicalUnit: item.canonicalUnit ?? "EACH",
+          };
+        }
+
+        if (value) {
+          const {
+            newSupplyItemName,
+            canonicalUnit,
+            ...rest
+          } = item;
+
+          return {
+            ...rest,
+            supplyItemId: value.id,
+          };
+        }
+
+        const {
+          supplyItemId,
+          newSupplyItemName,
+          canonicalUnit,
+          ...rest
+        } = item;
+
+        return rest;
+      })
+    );
+  };
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     const trimmedSupplierId = supplierId.trim();
@@ -296,13 +399,31 @@ function CreatePurchaseDialog({
       
       const quantityNum = Number(purchaseItems[p].quantity);
       const totalPriceNum = Number(purchaseItems[p].totalPrice);
-      const rawIngredientId = purchaseItems[p].rawIngredientId;
-      const newIngredientName =
-        purchaseItems[p].newIngredientName?.trim();
+      const item = purchaseItems[p];
 
-      if (!rawIngredientId && !newIngredientName) {
+      const hasIngredient =
+        !!item.rawIngredientId ||
+        !!item.newIngredientName?.trim();
+
+      const hasSupply =
+        !!item.supplyItemId ||
+        !!item.newSupplyItemName?.trim();
+
+      if (
+        item.itemType === "INGREDIENT" &&
+        !hasIngredient
+      ) {
         newErrors[p].itemName =
           t("purchases.form.errors.ingredientRequired");
+        hasErrors = true;
+      }
+
+      if (
+        item.itemType === "SUPPLY" &&
+        !hasSupply
+      ) {
+        newErrors[p].itemName =
+          t("purchases.form.errors.supplyItemRequired");
         hasErrors = true;
       }
 
@@ -357,6 +478,7 @@ function CreatePurchaseDialog({
       setTaxRate("0");
       setPurchaseItems([
         {
+          itemType: "INGREDIENT",
           orderUnits: "",
           quantity: "",
           totalPrice: "",
@@ -478,6 +600,31 @@ function CreatePurchaseDialog({
                 alignItems: "flex-start",
               }}
             >
+              <FormControl sx={{ minWidth: 140 }}>
+                <InputLabel>
+                  {t("purchases.form.itemType")}
+                </InputLabel>
+
+                <Select
+                  value={purchaseItem.itemType}
+                  label={t("purchases.form.itemType")}
+                  onChange={(event) =>
+                    handleItemTypeChange(
+                      index,
+                      event.target.value as "INGREDIENT" | "SUPPLY"
+                    )
+                  }
+                >
+                  <MenuItem value="INGREDIENT">
+                    {t("purchases.form.itemTypes.ingredient")}
+                  </MenuItem>
+                
+                  <MenuItem value="SUPPLY">
+                    {t("purchases.form.itemTypes.supply")}
+                  </MenuItem>
+                </Select>
+              </FormControl>
+              {purchaseItem.itemType === "INGREDIENT" ? (
               <Autocomplete
                 freeSolo
                 options={rawIngredients}
@@ -491,7 +638,7 @@ function CreatePurchaseDialog({
                   purchaseItem.rawIngredientId
                     ? rawIngredients.find(
                         (ingredient) =>
-                          ingredient.id === purchaseItem.rawIngredientId,
+                          ingredient.id === purchaseItem.rawIngredientId
                       ) ?? null
                     : purchaseItem.newIngredientName ?? null
                 }
@@ -508,14 +655,54 @@ function CreatePurchaseDialog({
                     {...params}
                     label={t("purchases.form.ingredient")}
                     error={!!purchaseItemErrors[index]?.itemName}
-                    helperText={
-                      purchaseItemErrors[index]?.itemName ?? ""
-                    }
+                    helperText={purchaseItemErrors[index]?.itemName ?? ""}
                   />
                 )}
               />
-              {purchaseItem.newIngredientName &&
-                !purchaseItem.rawIngredientId && (
+            ) : (
+              <Autocomplete
+                freeSolo
+                options={supplyItems}
+                sx={{ minWidth: 250 }}
+                getOptionLabel={(option) =>
+                  typeof option === "string"
+                    ? option
+                    : option.name
+                }
+                value={
+                  purchaseItem.supplyItemId
+                    ? supplyItems.find(
+                        (supplyItem) =>
+                          supplyItem.id === purchaseItem.supplyItemId
+                      ) ?? null
+                    : purchaseItem.newSupplyItemName ?? null
+                }
+                onChange={(_, value) =>
+                  handleSupplyItemChange(index, value)
+                }
+                onInputChange={(_, value, reason) => {
+                  if (reason === "input") {
+                    handleSupplyItemChange(index, value);
+                  }
+                }}
+                renderInput={(params) => (
+                  <TextField
+                    {...params}
+                    label={t("purchases.form.supplyItem")}
+                    error={!!purchaseItemErrors[index]?.itemName}
+                    helperText={purchaseItemErrors[index]?.itemName ?? ""}
+                  />
+                )}
+              />
+            )}
+                {(
+                  (purchaseItem.itemType === "INGREDIENT" &&
+                    purchaseItem.newIngredientName &&
+                    !purchaseItem.rawIngredientId) ||
+                  (purchaseItem.itemType === "SUPPLY" &&
+                    purchaseItem.newSupplyItemName &&
+                    !purchaseItem.supplyItemId)
+                ) && (
                   <FormControl sx={{ minWidth: 120 }}>
                     <InputLabel>{t("purchases.form.canonicalUnit")}</InputLabel>
                 
@@ -534,6 +721,11 @@ function CreatePurchaseDialog({
                       <MenuItem value="EACH">each</MenuItem>
                       <MenuItem value="BUNCH">bunch</MenuItem>
                       <MenuItem value="HEAD">head</MenuItem>
+                      <MenuItem value="BOX">box</MenuItem>
+                      <MenuItem value="CASE">case</MenuItem>
+                      <MenuItem value="PACK">pack</MenuItem>
+                      <MenuItem value="ROLL">roll</MenuItem>
+                      <MenuItem value="BOTTLE">bottle</MenuItem>
                     </Select>
                   </FormControl>
                 )}
@@ -566,18 +758,24 @@ function CreatePurchaseDialog({
                   input: {
                     endAdornment: (
                       <InputAdornment position="end">
-                        {purchaseItem.rawIngredientId
+                      {purchaseItem.rawIngredientId
+                        ? formatUnit(
+                            rawIngredients.find(
+                              (ingredient) =>
+                                ingredient.id === purchaseItem.rawIngredientId
+                            )?.canonicalUnit ?? "KG"
+                          )
+                        : purchaseItem.supplyItemId
                           ? formatUnit(
-                              rawIngredients.find(
-                                (ingredient) =>
-                                  ingredient.id ===
-                                  purchaseItem.rawIngredientId
-                              )?.canonicalUnit ?? "KG"
+                              supplyItems.find(
+                                (supplyItem) =>
+                                  supplyItem.id === purchaseItem.supplyItemId
+                              )?.canonicalUnit ?? "EACH"
                             )
                           : purchaseItem.canonicalUnit
                             ? formatUnit(purchaseItem.canonicalUnit)
                             : ""}
-                      </InputAdornment>
+                    </InputAdornment>
                     ),
                   },
                 }}

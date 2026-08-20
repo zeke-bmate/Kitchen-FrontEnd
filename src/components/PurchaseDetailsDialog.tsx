@@ -22,6 +22,16 @@ const formatUnit = (unit) => {
       return "bunch";
     case "HEAD":
       return "head";
+    case "BOX":
+      return "box";
+    case "CASE":
+      return "case";
+    case "PACK":
+      return "pack";
+    case "ROLL":
+      return "roll";
+    case "BOTTLE":
+      return "bottle";
     default:
       return "";
   }
@@ -118,10 +128,17 @@ function PurchaseDetailsDialog({
                             <TableRow key={i.id} hover>
                                 <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>{i.itemName}</TableCell>
                                 <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>{i.orderUnits || "—"}</TableCell>
-                                <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>{i.quantity}{" "}
-                                                                                                        {i.rawIngredient
-                                                                                                          ? formatUnit(i.rawIngredient.canonicalUnit)
-                                                                                                          : ""}</TableCell>
+                                <TableCell
+                                  align="center"
+                                  sx={{ borderRight: "1px solid #e0e0e0" }}
+                                >
+                                  {i.quantity}{" "}
+                                  {i.rawIngredient
+                                    ? formatUnit(i.rawIngredient.canonicalUnit)
+                                    : i.supplyItem
+                                      ? formatUnit(i.supplyItem.canonicalUnit)
+                                      : ""}
+                                </TableCell>
                                 <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>₡{i.pricePerUnit.toFixed(2)}</TableCell>
                                 <TableCell align="center" >₡{i.totalPrice.toFixed(2)}</TableCell>
                             </TableRow>

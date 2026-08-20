@@ -61,6 +61,12 @@
       "correctionReason": "Motivo de la corrección",
       "saveChanges": "Guardar cambios",
       "updating": "Actualizando...",
+      "itemType": "Tipo de artículo",
+      "itemTypes": {
+        "ingredient": "Ingrediente",
+        "supply": "Suministro"
+      },
+      "supplyItem": "Suministro",
       "errors": {
         "supplierRequired": "El proveedor es obligatorio.",
         "dateRequired": "La fecha es obligatoria.",
@@ -68,11 +74,13 @@
         "ingredientRequired": "El ingrediente es obligatorio.",
         "quantityPositive": "La cantidad debe ser mayor que cero.",
         "totalPricePositive": "El precio total debe ser mayor que cero.",
-        "unitRequired": "La unidad es obligatoria para un ingrediente nuevo.",
+        "unitRequired": "La unidad es obligatoria para un artículo nuevo.",
         "createFailed": "No se pudo crear la compra.",
         "reasonRequired": "El motivo de la corrección es obligatorio.",
         "existingIngredientRequired": "Se requiere un ingrediente existente.",
-        "updateFailed": "No se pudo actualizar la compra."
+        "updateFailed": "No se pudo actualizar la compra.",
+        "supplyItemRequired": "El suministro es obligatorio.",
+        "existingSupplyItemRequired": "Se requiere un suministro existente."
       }
     },
     "summary": {
@@ -162,6 +170,11 @@
         "createFailed": "No se pudo crear la receta.",
         "ingredientsLoadFailed": "No se pudieron cargar los ingredientes."
       }
+    }
+  },
+  "supplyItems": {
+    "errors": {
+      "loadFailed": "No se pudieron cargar los suministros."
     }
   },
   "common": {

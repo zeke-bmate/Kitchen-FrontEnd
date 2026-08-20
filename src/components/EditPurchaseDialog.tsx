@@ -29,6 +29,7 @@ import type { RawIngredient } from "../types/rawIngredient";
 import type { MeasurementUnit } from "../types/measurementUnit";
 import apiFetch from "../api/apiFetch";
 import { useTranslation } from "react-i18next";
+import type { SupplyItem } from "../types/supplyItem";
 
 const formatUnit = (unit: MeasurementUnit) => {
   switch (unit) {
@@ -42,6 +43,16 @@ const formatUnit = (unit: MeasurementUnit) => {
       return "bunch";
     case "HEAD":
       return "head";
+    case "BOX":
+      return "box";
+    case "CASE":
+      return "case";
+    case "PACK":
+      return "pack";
+    case "ROLL":
+      return "roll";
+    case "BOTTLE":
+      return "bottle";
   }
 };
 
@@ -50,6 +61,7 @@ type EditPurchaseDialogProps = {
   purchase: Purchase | null;
   suppliers: Supplier[];
   rawIngredients: RawIngredient[];
+  supplyItems: SupplyItem[];
   onClose: () => void;
   onPurchaseUpdated: (purchase: Purchase) => void;
 };
@@ -59,6 +71,7 @@ function EditPurchaseDialog({
   purchase,
   suppliers,
   rawIngredients,
+  supplyItems,
   onClose,
   onPurchaseUpdated,
 }: EditPurchaseDialogProps) {
@@ -100,6 +113,7 @@ function EditPurchaseDialog({
     setPurchaseItems((previousItems) => [
       ...previousItems,
       {
+        itemType: "INGREDIENT",
         orderUnits: "",
         quantity: "",
         totalPrice: "",
@@ -112,6 +126,60 @@ function EditPurchaseDialog({
       previousItems.filter(
         (_, index) => index !== indexToRemove,
       ),
+    );
+  };
+
+  const handleItemTypeChange = (
+    index: number,
+    itemType: "INGREDIENT" | "SUPPLY",
+  ) => {
+    setPurchaseItems((previousItems) =>
+      previousItems.map((item, itemIndex) => {
+        if (itemIndex !== index) {
+          return item;
+        }
+      
+        let currentName = "";
+      
+        if (item.itemType === "INGREDIENT") {
+          if (item.rawIngredientId) {
+            currentName =
+              rawIngredients.find(
+                (ingredient) =>
+                  ingredient.id === item.rawIngredientId
+              )?.name ?? "";
+          } else {
+            currentName = item.newIngredientName ?? "";
+          }
+        } else {
+          if (item.supplyItemId) {
+            currentName =
+              supplyItems.find(
+                (supplyItem) =>
+                  supplyItem.id === item.supplyItemId
+              )?.name ?? "";
+          } else {
+            currentName = item.newSupplyItemName ?? "";
+          }
+        }
+      
+        return {
+          itemType,
+          orderUnits: item.orderUnits,
+          quantity: item.quantity,
+          totalPrice: item.totalPrice,
+        
+          ...(itemType === "INGREDIENT" &&
+            currentName && {
+              newIngredientName: currentName,
+            }),
+          
+          ...(itemType === "SUPPLY" &&
+            currentName && {
+              newSupplyItemName: currentName,
+            }),
+        };
+      })
     );
   };
 
@@ -132,7 +200,18 @@ function EditPurchaseDialog({
   
       setPurchaseItems(
         purchase.items.map((item) => ({
-          rawIngredientId: item.rawIngredientId ?? undefined,
+          itemType: item.rawIngredientId
+            ? "INGREDIENT"
+            : "SUPPLY",
+        
+          ...(item.rawIngredientId && {
+            rawIngredientId: item.rawIngredientId,
+          }),
+        
+          ...(item.supplyItemId && {
+            supplyItemId: item.supplyItemId,
+          }),
+        
           orderUnits: item.orderUnits ?? "",
           quantity: String(item.quantity),
           totalPrice: String(item.totalPrice),
@@ -201,15 +280,41 @@ function EditPurchaseDialog({
         orderUnits: null,
         quantity: null,
         totalPrice: null,
+        canonicalUnit: null,
       }));
   
     purchaseItems.forEach((item, index) => {
       const quantity = Number(item.quantity);
       const totalPrice = Number(item.totalPrice);
   
-      if (!item.rawIngredientId) {
+      if (
+        item.itemType === "INGREDIENT" &&
+        !item.rawIngredientId &&
+        !item.newIngredientName?.trim()
+      ) {
         newErrors[index].itemName =
           t("purchases.form.errors.existingIngredientRequired");
+        hasErrors = true;
+      }
+
+      if (
+        item.itemType === "SUPPLY" &&
+        !item.supplyItemId &&
+        !item.newSupplyItemName?.trim()
+      ) {
+        newErrors[index].itemName =
+          t("purchases.form.errors.existingSupplyItemRequired");
+        hasErrors = true;
+      }
+
+      const isNewItem =
+        !!item.newIngredientName?.trim() ||
+        !!item.newSupplyItemName?.trim();
+
+      if (isNewItem && !item.canonicalUnit) {
+        newErrors[index].canonicalUnit =
+          t("purchases.form.errors.unitRequired");
+      
         hasErrors = true;
       }
   
@@ -245,7 +350,32 @@ function EditPurchaseDialog({
       taxRate: taxRateNum,
       reason: trimmedReason,
       items: purchaseItems.map((item) => ({
-        rawIngredientId: item.rawIngredientId,
+        ...(item.itemType === "INGREDIENT" &&
+          item.rawIngredientId && {
+            rawIngredientId: item.rawIngredientId,
+          }),
+        
+        ...(item.itemType === "INGREDIENT" &&
+          !item.rawIngredientId &&
+          item.newIngredientName?.trim() && {
+            newIngredientName:
+              item.newIngredientName.trim(),
+            canonicalUnit: item.canonicalUnit,
+          }),
+        
+        ...(item.itemType === "SUPPLY" &&
+          item.supplyItemId && {
+            supplyItemId: item.supplyItemId,
+          }),
+        
+        ...(item.itemType === "SUPPLY" &&
+          !item.supplyItemId &&
+          item.newSupplyItemName?.trim() && {
+            newSupplyItemName:
+              item.newSupplyItemName.trim(),
+            canonicalUnit: item.canonicalUnit,
+          }),
+        
         orderUnits: item.orderUnits?.trim() || null,
         quantity: Number(item.quantity),
         totalPrice: Number(item.totalPrice),
@@ -424,46 +554,242 @@ return (
                 alignItems: "flex-start",
               }}
             >
-              <Autocomplete
-                options={rawIngredients}
-                sx={{ minWidth: 250 }}
-                getOptionLabel={(option) => option.name}
-                value={
-                  purchaseItem.rawIngredientId
-                    ? rawIngredients.find(
-                        (ingredient) =>
-                          ingredient.id ===
-                          purchaseItem.rawIngredientId
-                      ) ?? null
-                    : null
-                }
-                onChange={(_, value) => {
-                  setPurchaseItems((previousItems) =>
-                    previousItems.map((item, itemIndex) =>
-                      itemIndex === index
-                        ? {
-                            ...item,
-                            rawIngredientId:
-                              value?.id ?? undefined,
-                          }
-                        : item
+              <FormControl sx={{ minWidth: 140 }}>
+                <InputLabel>
+                  {t("purchases.form.itemType")}
+                </InputLabel>
+
+                <Select
+                  value={purchaseItem.itemType}
+                  label={t("purchases.form.itemType")}
+                  onChange={(event) =>
+                    handleItemTypeChange(
+                      index,
+                      event.target.value as "INGREDIENT" | "SUPPLY"
                     )
-                  );
-                }}
-                renderInput={(params) => (
-                  <TextField
-                    {...params}
-                    label={t("purchases.form.ingredient")}
-                    error={
-                      !!purchaseItemErrors[index]?.itemName
+                  }
+                >
+                  <MenuItem value="INGREDIENT">
+                    {t("purchases.form.itemTypes.ingredient")}
+                  </MenuItem>
+                
+                  <MenuItem value="SUPPLY">
+                    {t("purchases.form.itemTypes.supply")}
+                  </MenuItem>
+                </Select>
+              </FormControl>
+              {purchaseItem.itemType === "INGREDIENT" ? (
+                <Autocomplete
+                  freeSolo
+                  options={rawIngredients}
+                  sx={{ minWidth: 250 }}
+                  getOptionLabel={(option) =>
+                    typeof option === "string"
+                      ? option
+                      : option.name
+                  }
+                  value={
+                    purchaseItem.rawIngredientId
+                      ? rawIngredients.find(
+                          (ingredient) =>
+                            ingredient.id ===
+                            purchaseItem.rawIngredientId
+                        ) ?? null
+                      : purchaseItem.newIngredientName ?? ""
+                  }
+                  onChange={(_, value) => {
+                    setPurchaseItems((previousItems) =>
+                      previousItems.map((item, itemIndex) => {
+                        if (itemIndex !== index) {
+                          return item;
+                        }
+                      
+                        if (typeof value === "string") {
+                          return {
+                            ...item,
+                            rawIngredientId: undefined,
+                            newIngredientName: value,
+                          };
+                        }
+                      
+                        if (value) {
+                          return {
+                            ...item,
+                            rawIngredientId: value.id,
+                            newIngredientName: undefined,
+                            canonicalUnit: undefined,
+                          };
+                        }
+                      
+                        return {
+                          ...item,
+                          rawIngredientId: undefined,
+                          newIngredientName: undefined,
+                          canonicalUnit: undefined,
+                        };
+                      })
+                    );
+                  }}
+                  onInputChange={(_, value, reason) => {
+                    if (reason !== "input") {
+                      return;
                     }
-                    helperText={
-                      purchaseItemErrors[index]?.itemName ??
-                      ""
+                  
+                    setPurchaseItems((previousItems) =>
+                      previousItems.map((item, itemIndex) =>
+                        itemIndex === index
+                          ? {
+                              ...item,
+                              rawIngredientId: undefined,
+                              newIngredientName: value,
+                            }
+                          : item
+                      )
+                    );
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label={t("purchases.form.ingredient")}
+                      error={!!purchaseItemErrors[index]?.itemName}
+                      helperText={
+                        purchaseItemErrors[index]?.itemName ?? ""
+                      }
+                    />
+                  )}
+                />
+              ) : (
+                <Autocomplete
+                  freeSolo
+                  options={supplyItems}
+                  sx={{ minWidth: 250 }}
+                  getOptionLabel={(option) =>
+                    typeof option === "string"
+                      ? option
+                      : option.name
+                  }
+                  value={
+                    purchaseItem.supplyItemId
+                      ? supplyItems.find(
+                          (supplyItem) =>
+                            supplyItem.id ===
+                            purchaseItem.supplyItemId
+                        ) ?? null
+                      : purchaseItem.newSupplyItemName ?? ""
+                  }
+                  onChange={(_, value) => {
+                    setPurchaseItems((previousItems) =>
+                      previousItems.map((item, itemIndex) => {
+                        if (itemIndex !== index) {
+                          return item;
+                        }
+                      
+                        if (typeof value === "string") {
+                          return {
+                            ...item,
+                            supplyItemId: undefined,
+                            newSupplyItemName: value,
+                          };
+                        }
+                      
+                        if (value) {
+                          return {
+                            ...item,
+                            supplyItemId: value.id,
+                            newSupplyItemName: undefined,
+                            canonicalUnit: undefined,
+                          };
+                        }
+                      
+                        return {
+                          ...item,
+                          supplyItemId: undefined,
+                          newSupplyItemName: undefined,
+                          canonicalUnit: undefined,
+                        };
+                      })
+                    );
+                  }}
+                  onInputChange={(_, value, reason) => {
+                    if (reason !== "input") {
+                      return;
                     }
-                  />
-                )}
-              />
+                  
+                    setPurchaseItems((previousItems) =>
+                      previousItems.map((item, itemIndex) =>
+                        itemIndex === index
+                          ? {
+                              ...item,
+                              supplyItemId: undefined,
+                              newSupplyItemName: value,
+                            }
+                          : item
+                      )
+                    );
+                  }}
+                  renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      label={t("purchases.form.supplyItem")}
+                      error={!!purchaseItemErrors[index]?.itemName}
+                      helperText={
+                        purchaseItemErrors[index]?.itemName ?? ""
+                      }
+                    />
+                  )}
+                />
+              )}
+
+              {(
+                purchaseItem.newIngredientName ||
+                purchaseItem.newSupplyItemName
+              ) && (
+                <FormControl error={!!purchaseItemErrors[index]?.canonicalUnit} sx={{ minWidth: 120 }}>
+                  <InputLabel>
+                    {t("purchases.form.canonicalUnit")}
+                  </InputLabel>
+              
+                  <Select
+                    value={purchaseItem.canonicalUnit ?? ""}
+                    label={t("purchases.form.canonicalUnit")}
+                    onChange={(event) => {
+                      setPurchaseItems((previousItems) =>
+                        previousItems.map((item, itemIndex) =>
+                          itemIndex === index
+                            ? {
+                                ...item,
+                                canonicalUnit:
+                                  event.target.value as MeasurementUnit,
+                              }
+                            : item
+                        )
+                      );
+                    }}
+                  >
+                    {[
+                      "KG",
+                      "L",
+                      "EACH",
+                      "BUNCH",
+                      "HEAD",
+                      "BOX",
+                      "CASE",
+                      "PACK",
+                      "ROLL",
+                      "BOTTLE",
+                    ].map((unit) => (
+                      <MenuItem key={unit} value={unit}>
+                        {formatUnit(unit as MeasurementUnit)}
+                      </MenuItem>
+                    ))}
+                  </Select>
+                  {!!purchaseItemErrors[index]?.canonicalUnit && (
+                    <FormHelperText>
+                      {purchaseItemErrors[index]?.canonicalUnit}
+                    </FormHelperText>
+                  )}
+                </FormControl>
+              )}
   
               <TextField
                 value={purchaseItem.orderUnits}
@@ -511,15 +837,25 @@ return (
                   input: {
                     endAdornment: (
                       <InputAdornment position="end">
-                        {purchaseItem.rawIngredientId
+                        {purchaseItem.itemType === "INGREDIENT" &&
+                        purchaseItem.rawIngredientId
                           ? formatUnit(
                               rawIngredients.find(
                                 (ingredient) =>
-                                  ingredient.id ===
-                                  purchaseItem.rawIngredientId
+                                  ingredient.id === purchaseItem.rawIngredientId
                               )?.canonicalUnit ?? "KG"
                             )
-                          : ""}
+                          : purchaseItem.itemType === "SUPPLY" &&
+                              purchaseItem.supplyItemId
+                            ? formatUnit(
+                                supplyItems.find(
+                                  (supplyItem) =>
+                                    supplyItem.id === purchaseItem.supplyItemId
+                                )?.canonicalUnit ?? "EACH"
+                              )
+                            : purchaseItem.canonicalUnit
+                              ? formatUnit(purchaseItem.canonicalUnit)
+                              : ""}
                       </InputAdornment>
                     ),
                   },
