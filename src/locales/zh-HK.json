@@ -61,6 +61,12 @@
       "correctionReason": "更正原因",
       "saveChanges": "儲存變更",
       "updating": "更新中...",
+      "itemType": "品項類型",
+      "itemTypes": {
+        "ingredient": "原料",
+        "supply": "用品"
+      },
+      "supplyItem": "用品",
       "errors": {
         "supplierRequired": "請選擇供應商。",
         "dateRequired": "請選擇日期。",
@@ -68,11 +74,13 @@
         "ingredientRequired": "請選擇或輸入原料。",
         "quantityPositive": "數量必須大於零。",
         "totalPricePositive": "總價必須大於零。",
-        "unitRequired": "新增原料時必須選擇單位。",
+        "unitRequired": "新增品項時必須選擇單位。",
         "createFailed": "無法新增採購。",
         "reasonRequired": "請輸入更正原因。",
         "existingIngredientRequired": "請選擇現有原料。",
-        "updateFailed": "無法更新採購。"
+        "updateFailed": "無法更新採購。",
+        "supplyItemRequired": "請選擇或輸入用品。",
+        "existingSupplyItemRequired": "請選擇現有用品。"
       }
     },
     "summary": {
@@ -162,6 +170,11 @@
         "createFailed": "無法新增食譜。",
         "ingredientsLoadFailed": "無法載入原料。"
       }
+    }
+  },
+  "supplyItems": {
+    "errors": {
+      "loadFailed": "無法載入用品。"
     }
   },
   "common": {

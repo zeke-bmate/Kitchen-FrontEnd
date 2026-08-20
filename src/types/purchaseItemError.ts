@@ -3,4 +3,5 @@ export type PurchaseItemError = {
   orderUnits: string | null;
   quantity: string | null;
   totalPrice: string | null;
+  canonicalUnit: string | null;
 };

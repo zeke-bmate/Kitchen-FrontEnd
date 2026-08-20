@@ -58,6 +58,12 @@
       "create": "Create Purchase",
       "creating": "Creating...",
       "newIngredient": "New ingredient",
+      "itemType": "Item Type",
+      "itemTypes": {
+        "ingredient": "Ingredient",
+        "supply": "Supply"
+      },
+      "supplyItem": "Supply Item",
       "errors": {
         "supplierRequired": "Supplier is required.",
         "dateRequired": "Date is required.",
@@ -65,11 +71,13 @@
         "ingredientRequired": "Ingredient is required.",
         "quantityPositive": "Quantity must be greater than zero.",
         "totalPricePositive": "Total price must be greater than zero.",
-        "unitRequired": "Unit is required for a new ingredient.",
+        "unitRequired": "Unit is required for a new item.",
         "createFailed": "Failed to create purchase.",
         "reasonRequired": "Correction reason is required.",
         "existingIngredientRequired": "An existing raw ingredient is required.",
-        "updateFailed": "Failed to update purchase."
+        "updateFailed": "Failed to update purchase.",
+        "supplyItemRequired": "Supply item is required.",
+        "existingSupplyItemRequired": "An existing supply item is required."
       },
       "editTitle": "Edit Purchase",
       "correctionReason": "Correction Reason",
@@ -163,6 +171,11 @@
         "createFailed": "Failed to create recipe.",
         "ingredientsLoadFailed": "Failed to load raw ingredients."
       }
+    }
+  },
+  "supplyItems": {
+    "errors": {
+      "loadFailed": "Failed to load supply items."
     }
   },
   "common": {

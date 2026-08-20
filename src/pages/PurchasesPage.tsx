@@ -18,6 +18,7 @@ import {
 } from "@mui/material";
 import PurchaseDetailsDialog from "../components/PurchaseDetailsDialog";
 import type { RawIngredient } from "../types/rawIngredient";
+import type { SupplyItem } from "../types/supplyItem";
 import CreatePurchaseDialog from "../components/CreatePurchaseDialog";
 import apiFetch from "../api/apiFetch";
 import EditPurchaseDialog from "../components/EditPurchaseDialog";
@@ -37,6 +38,7 @@ function PurchasesPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
   const [rawIngredients, setRawIngredients] = useState<RawIngredient[]>([]);
+  const [supplyItems, setSupplyItems] = useState<SupplyItem[]>([]);
   const [editPurchase, setEditPurchase] = useState<Purchase | null>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [summaryMonthIndex, setSummaryMonthIndex] = useState(0);
@@ -114,7 +116,7 @@ function PurchasesPage() {
       createdPurchase,
       ...previousPurchases,
     ]);
-  
+
     const purchaseIngredients = createdPurchase.items
       .map((item) => item.rawIngredient)
       .filter(
@@ -122,7 +124,7 @@ function PurchasesPage() {
           ingredient !== null &&
           ingredient !== undefined
       );
-  
+
     setRawIngredients((previousIngredients) => {
       const ingredientMap = new Map(
         previousIngredients.map((ingredient) => [
@@ -130,12 +132,35 @@ function PurchasesPage() {
           ingredient,
         ])
       );
-  
+
       for (const ingredient of purchaseIngredients) {
         ingredientMap.set(ingredient.id, ingredient);
       }
-  
+
       return Array.from(ingredientMap.values());
+    });
+
+    const purchaseSupplyItems = createdPurchase.items
+      .map((item) => item.supplyItem)
+      .filter(
+        (supplyItem): supplyItem is SupplyItem =>
+          supplyItem !== null &&
+          supplyItem !== undefined
+      );
+
+    setSupplyItems((previousSupplyItems) => {
+      const supplyItemMap = new Map(
+        previousSupplyItems.map((supplyItem) => [
+          supplyItem.id,
+          supplyItem,
+        ])
+      );
+
+      for (const supplyItem of purchaseSupplyItems) {
+        supplyItemMap.set(supplyItem.id, supplyItem);
+      }
+
+      return Array.from(supplyItemMap.values());
     });
   };
 
@@ -168,6 +193,52 @@ function PurchasesPage() {
           : purchase
       )
     );
+  
+    const purchaseIngredients = updatedPurchase.items
+      .map((item) => item.rawIngredient)
+      .filter(
+        (ingredient): ingredient is RawIngredient =>
+          ingredient !== null &&
+          ingredient !== undefined
+      );
+    
+    setRawIngredients((previousIngredients) => {
+      const ingredientMap = new Map(
+        previousIngredients.map((ingredient) => [
+          ingredient.id,
+          ingredient,
+        ])
+      );
+    
+      for (const ingredient of purchaseIngredients) {
+        ingredientMap.set(ingredient.id, ingredient);
+      }
+    
+      return Array.from(ingredientMap.values());
+    });
+  
+    const purchaseSupplyItems = updatedPurchase.items
+      .map((item) => item.supplyItem)
+      .filter(
+        (supplyItem): supplyItem is SupplyItem =>
+          supplyItem !== null &&
+          supplyItem !== undefined
+      );
+    
+    setSupplyItems((previousSupplyItems) => {
+      const supplyItemMap = new Map(
+        previousSupplyItems.map((supplyItem) => [
+          supplyItem.id,
+          supplyItem,
+        ])
+      );
+    
+      for (const supplyItem of purchaseSupplyItems) {
+        supplyItemMap.set(supplyItem.id, supplyItem);
+      }
+    
+      return Array.from(supplyItemMap.values());
+    });
   
     setSelectedPurchase(updatedPurchase);
     setEditDialogOpen(false);
@@ -243,6 +314,33 @@ function PurchasesPage() {
     };
 
     fetchRawIngredients();
+  }, []);
+
+  useEffect(() => {
+    const fetchSupplyItems = async () => {
+      try {
+        const response = await apiFetch("/api/supply-items");
+
+        if (!response.ok) {
+          const errorData = await response.json();
+
+          throw new Error(
+            errorData.error ||
+            errorData.message ||
+            t("supplyItems.errors.loadFailed")
+          );
+        }
+
+        const data = await response.json();
+        setSupplyItems(data);
+      } catch (error) {
+        if (error instanceof Error) {
+          setError(error.message);
+        }
+      }
+    };
+
+    fetchSupplyItems();
   }, []);
 
   if (error) return <p>{error}</p>;
@@ -519,6 +617,7 @@ function PurchasesPage() {
           onPurchaseCreated={handlePurchaseCreated}
           suppliers={suppliers}
           rawIngredients={rawIngredients}
+          supplyItems={supplyItems}
         />
       )}
 
@@ -528,6 +627,7 @@ function PurchasesPage() {
           purchase={editPurchase}
           suppliers={suppliers}
           rawIngredients={rawIngredients}
+          supplyItems={supplyItems}
           onClose={handleEditPurchaseClose}
           onPurchaseUpdated={handlePurchaseUpdated}
         />
