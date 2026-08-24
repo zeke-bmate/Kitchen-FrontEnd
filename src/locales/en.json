@@ -38,7 +38,8 @@
       "quantity": "Quantity",
       "pricePerUnit": "Price / Unit",
       "total": "Total",
-      "editPurchase": "Edit Purchase"
+      "editPurchase": "Edit Purchase",
+      "taxRate": "Tax %"
     },
     "form": {
       "createTitle": "Create Purchase",
@@ -77,7 +78,8 @@
         "existingIngredientRequired": "An existing raw ingredient is required.",
         "updateFailed": "Failed to update purchase.",
         "supplyItemRequired": "Supply item is required.",
-        "existingSupplyItemRequired": "An existing supply item is required."
+        "existingSupplyItemRequired": "An existing supply item is required.",
+        "subtotalPositive": "Subtotal must be greater than zero."
       },
       "editTitle": "Edit Purchase",
       "correctionReason": "Correction Reason",

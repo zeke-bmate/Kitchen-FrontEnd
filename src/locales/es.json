@@ -37,7 +37,8 @@
       "quantity": "Cantidad",
       "pricePerUnit": "Precio / unidad",
       "total": "Total",
-      "editPurchase": "Editar compra"
+      "editPurchase": "Editar compra",
+      "taxRate": "Impuesto %"
     },
     "form": {
       "createTitle": "Crear compra",
@@ -80,7 +81,8 @@
         "existingIngredientRequired": "Se requiere un ingrediente existente.",
         "updateFailed": "No se pudo actualizar la compra.",
         "supplyItemRequired": "El suministro es obligatorio.",
-        "existingSupplyItemRequired": "Se requiere un suministro existente."
+        "existingSupplyItemRequired": "Se requiere un suministro existente.",
+        "subtotalPositive": "El subtotal debe ser mayor que cero."
       }
     },
     "summary": {

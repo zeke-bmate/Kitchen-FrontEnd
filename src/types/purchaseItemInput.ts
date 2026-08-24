@@ -13,5 +13,7 @@ export type PurchaseItemInput = {
 
   orderUnits: string;
   quantity: string;
-  totalPrice: string;
+
+  subtotal: string;
+  taxRate: string;
 };

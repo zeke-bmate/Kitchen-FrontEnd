@@ -78,7 +78,6 @@ function EditPurchaseDialog({
   const { t } = useTranslation(); 
   const [supplierId, setSupplierId] = useState("");
   const [date, setDate] = useState("");
-  const [taxRate, setTaxRate] = useState("0");
   const [reason, setReason] = useState("");
   const [purchaseItems, setPurchaseItems] = useState<
     PurchaseItemInput[]
@@ -89,8 +88,6 @@ function EditPurchaseDialog({
     useState<string | null>(null);
   const [reasonError, setReasonError] =
     useState<string | null>(null);
-    const [taxRateError, setTaxRateError] =
-  useState<string | null>(null);
   const [formError, setFormError] =
     useState<string | null>(null);
   const [purchaseItemErrors, setPurchaseItemErrors] =
@@ -98,16 +95,32 @@ function EditPurchaseDialog({
   const [submitting, setSubmitting] = useState(false);
 
   const subtotal = purchaseItems.reduce((sum, item) => {
-    const itemTotal = Number(item.totalPrice);
-    
-    return sum + (Number.isNaN(itemTotal) ? 0 : itemTotal);
+    const itemSubtotal = Number(item.subtotal);
+
+    return sum + (Number.isNaN(itemSubtotal) ? 0 : itemSubtotal);
   }, 0);
-  
-  const taxRateNum = Number(taxRate);
-  
-  const taxAmount = Math.round(subtotal * ((Number.isNaN(taxRateNum) ? 0 : taxRateNum) / 100) * 100) / 100;
-  
-  const total = Math.round((subtotal + taxAmount) * 100) / 100;
+
+  const taxAmount = purchaseItems.reduce((sum, item) => {
+    const itemSubtotal = Number(item.subtotal);
+    const itemTaxRate = Number(item.taxRate);
+
+    if (
+      Number.isNaN(itemSubtotal) ||
+      Number.isNaN(itemTaxRate)
+    ) {
+      return sum;
+    }
+
+    const itemTax =
+      Math.round(
+        itemSubtotal * (itemTaxRate / 100) * 100
+      ) / 100;
+
+    return sum + itemTax;
+  }, 0);
+
+  const total =
+    Math.round((subtotal + taxAmount) * 100) / 100;
 
   const handleAddItemClick = () => {
     setPurchaseItems((previousItems) => [
@@ -116,7 +129,8 @@ function EditPurchaseDialog({
         itemType: "INGREDIENT",
         orderUnits: "",
         quantity: "",
-        totalPrice: "",
+        subtotal: "",
+        taxRate: "0",
       },
     ]);
   };
@@ -167,7 +181,8 @@ function EditPurchaseDialog({
           itemType,
           orderUnits: item.orderUnits,
           quantity: item.quantity,
-          totalPrice: item.totalPrice,
+          subtotal: item.subtotal,
+          taxRate: item.taxRate,
         
           ...(itemType === "INGREDIENT" &&
             currentName && {
@@ -193,8 +208,6 @@ function EditPurchaseDialog({
       setDate(
         new Date(purchase.date).toISOString().split("T")[0]
       );
-
-      setTaxRate(String(purchase.taxRate ?? 0));
   
       setReason("");
   
@@ -214,14 +227,14 @@ function EditPurchaseDialog({
         
           orderUnits: item.orderUnits ?? "",
           quantity: String(item.quantity),
-          totalPrice: String(item.totalPrice),
+          subtotal: String(item.subtotal),
+          taxRate: String(item.taxRate),
         }))
       );
   
       setSupplierError(null);
       setDateError(null);
       setReasonError(null);
-      setTaxRateError(null);
       setFormError(null);
       setPurchaseItemErrors([]);
   },[open, purchase]);
@@ -238,7 +251,6 @@ function EditPurchaseDialog({
     setSupplierError(null);
     setDateError(null);
     setReasonError(null);
-    setTaxRateError(null);
     setFormError(null);
     setPurchaseItemErrors([]);
   
@@ -256,18 +268,6 @@ function EditPurchaseDialog({
       setDateError(t("purchases.form.errors.dateRequired"));
       hasErrors = true;
     }
-
-    if (
-      taxRate.trim() === "" ||
-      !Number.isFinite(taxRateNum) ||
-      taxRateNum < 0 ||
-      taxRateNum > 100
-    ) {
-      setTaxRateError(
-        t("purchases.form.errors.taxRateInvalid")
-      );
-      hasErrors = true;
-    }
   
     if (!trimmedReason) {
       setReasonError(t("purchases.form.errors.reasonRequired"));
@@ -276,16 +276,18 @@ function EditPurchaseDialog({
   
     const newErrors: PurchaseItemError[] =
       purchaseItems.map(() => ({
-        itemName: null,
-        orderUnits: null,
-        quantity: null,
-        totalPrice: null,
-        canonicalUnit: null,
-      }));
+      itemName: null,
+      orderUnits: null,
+      quantity: null,
+      subtotal: null,
+      taxRate: null,
+      canonicalUnit: null,
+    }));
   
     purchaseItems.forEach((item, index) => {
       const quantity = Number(item.quantity);
-      const totalPrice = Number(item.totalPrice);
+      const itemSubtotal = Number(item.subtotal);
+      const itemTaxRate = Number(item.taxRate);
   
       if (
         item.itemType === "INGREDIENT" &&
@@ -328,11 +330,22 @@ function EditPurchaseDialog({
       }
   
       if (
-        Number.isNaN(totalPrice) ||
-        totalPrice <= 0
+        Number.isNaN(itemSubtotal) ||
+        itemSubtotal <= 0
       ) {
-        newErrors[index].totalPrice =
-          t("purchases.form.errors.totalPricePositive");
+        newErrors[index].subtotal =
+          t("purchases.form.errors.subtotalPositive");
+        hasErrors = true;
+      }
+
+      if (
+        item.taxRate.trim() === "" ||
+        !Number.isFinite(itemTaxRate) ||
+        itemTaxRate < 0 ||
+        itemTaxRate > 100
+      ) {
+        newErrors[index].taxRate =
+          t("purchases.form.errors.taxRateInvalid");
         hasErrors = true;
       }
     });
@@ -347,7 +360,6 @@ function EditPurchaseDialog({
     const data = {
       supplierId: trimmedSupplierId,
       date,
-      taxRate: taxRateNum,
       reason: trimmedReason,
       items: purchaseItems.map((item) => ({
         ...(item.itemType === "INGREDIENT" &&
@@ -378,7 +390,8 @@ function EditPurchaseDialog({
         
         orderUnits: item.orderUnits?.trim() || null,
         quantity: Number(item.quantity),
-        totalPrice: Number(item.totalPrice),
+        subtotal: Number(item.subtotal),
+        taxRate: Number(item.taxRate),
       })),
     };
   
@@ -496,32 +509,6 @@ return (
               slotProps={{
                 inputLabel: {
                   shrink: true,
-                },
-              }}
-            />
-            <TextField
-              type="number"
-              label={t("purchases.form.taxRate")}
-              value={taxRate}
-              onChange={(event) => {
-                setTaxRateError(null);
-                setTaxRate(event.target.value);
-              }}
-              error={!!taxRateError}
-              helperText={taxRateError ?? ""}
-              sx={{ width: 180 }}
-              slotProps={{
-                htmlInput: {
-                  min: 0,
-                  max: 100,
-                  step: "any",
-                },
-                input: {
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      %
-                    </InputAdornment>
-                  ),
                 },
               }}
             />
@@ -864,34 +851,69 @@ return (
   
               <TextField
                 type="number"
-                label={t("purchases.form.totalPrice")}
-                value={purchaseItem.totalPrice}
+                label={t("purchases.form.subtotal")}
+                value={purchaseItem.subtotal}
                 onChange={(event) => {
                   setPurchaseItems((previousItems) =>
                     previousItems.map((item, itemIndex) =>
                       itemIndex === index
                         ? {
                             ...item,
-                            totalPrice: event.target.value,
+                            subtotal: event.target.value,
                           }
                         : item
                     )
                   );
                 }}
-                error={
-                  !!purchaseItemErrors[index]?.totalPrice
-                }
+                error={!!purchaseItemErrors[index]?.subtotal}
                 helperText={
-                  purchaseItemErrors[index]?.totalPrice ?? ""
+                  purchaseItemErrors[index]?.subtotal ?? ""
                 }
                 slotProps={{
                   htmlInput: {
+                    min: 0,
                     step: "any",
                   },
                   input: {
                     startAdornment: (
                       <InputAdornment position="start">
                         ₡
+                      </InputAdornment>
+                    ),
+                  },
+                }}
+              />
+              <TextField
+                type="number"
+                label={t("purchases.form.taxRate")}
+                value={purchaseItem.taxRate}
+                onChange={(event) => {
+                  setPurchaseItems((previousItems) =>
+                    previousItems.map((item, itemIndex) =>
+                      itemIndex === index
+                        ? {
+                            ...item,
+                            taxRate: event.target.value,
+                          }
+                        : item
+                    )
+                  );
+                }}
+                error={!!purchaseItemErrors[index]?.taxRate}
+                helperText={
+                  purchaseItemErrors[index]?.taxRate ?? ""
+                }
+                sx={{ width: 130 }}
+                slotProps={{
+                  htmlInput: {
+                    min: 0,
+                    max: 100,
+                    step: "any",
+                  },
+                  input: {
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        %
                       </InputAdornment>
                     ),
                   },
@@ -955,8 +977,7 @@ return (
                 sx={{ justifyContent: "space-between" }}
               >
                 <Typography>
-                  {t("purchases.form.tax")} (
-                  {Number.isNaN(taxRateNum) ? 0 : taxRateNum}%)
+                  {t("purchases.form.tax")}
                 </Typography>
                   
                 <Typography>
