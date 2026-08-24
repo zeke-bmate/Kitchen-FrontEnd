@@ -37,7 +37,8 @@
       "quantity": "數量",
       "pricePerUnit": "單價",
       "total": "合計",
-      "editPurchase": "編輯採購"
+      "editPurchase": "編輯採購",
+      "taxRate": "稅率 %"
     },
     "form": {
       "createTitle": "新增採購",
@@ -80,7 +81,8 @@
         "existingIngredientRequired": "請選擇現有原料。",
         "updateFailed": "無法更新採購。",
         "supplyItemRequired": "請選擇或輸入用品。",
-        "existingSupplyItemRequired": "請選擇現有用品。"
+        "existingSupplyItemRequired": "請選擇現有用品。",
+        "subtotalPositive": "小計必須大於零。"
       }
     },
     "summary": {

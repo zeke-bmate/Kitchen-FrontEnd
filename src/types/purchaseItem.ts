@@ -7,7 +7,11 @@ export type PurchaseItem = {
   itemName: string;
   orderUnits: string | null;
   quantity: number;
+
   pricePerUnit: number;
+  subtotal: number;
+  taxRate: number;
+  taxAmount: number;
   totalPrice: number;
 
   rawIngredientId: string | null;

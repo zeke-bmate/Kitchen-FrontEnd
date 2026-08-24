@@ -2,6 +2,7 @@ import { Dialog, DialogTitle, DialogContent, Typography, Divider, Paper, Table, 
 import CloseIcon from '@mui/icons-material/Close';
 import { useTranslation } from "react-i18next";
 import type { Purchase } from "../types/purchase";
+import type { MeasurementUnit } from "../types/measurementUnit";
 
 type PurchaseDetailsDialogProps = {
   selectedPurchase: Purchase | null;
@@ -10,7 +11,7 @@ type PurchaseDetailsDialogProps = {
   onEdit?: (purchase: Purchase) => void;
 };
 
-const formatUnit = (unit) => {
+const formatUnit = (unit: MeasurementUnit) => {
   switch (unit) {
     case "KG":
       return "kg";
@@ -49,7 +50,7 @@ function PurchaseDetailsDialog({
             open={open}
             onClose={onClose}
             fullWidth
-            maxWidth="md"
+            maxWidth="lg"
             slotProps={{
               paper: {
                 sx: { borderRadius: 3 },
@@ -91,7 +92,7 @@ function PurchaseDetailsDialog({
                                                 
                         <Typography sx={{ mb: 1 }}>
                           <strong>
-                            {t("purchases.details.tax")} ({selectedPurchase.taxRate}%):
+                            {t("purchases.details.tax")}:
                           </strong>{" "}
                           ₡{selectedPurchase.taxAmount.toFixed(2)}
                         </Typography>
@@ -120,6 +121,9 @@ function PurchaseDetailsDialog({
                             <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>{t("purchases.details.orderUnits")}</TableCell>
                             <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>{t("purchases.details.quantity")}</TableCell>
                             <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>{t("purchases.details.pricePerUnit")}</TableCell>
+                            <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>{t("purchases.details.subtotal")}</TableCell>
+                            <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>{t("purchases.details.taxRate")}</TableCell>
+                            <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>{t("purchases.details.tax")}</TableCell>
                             <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>{t("purchases.details.total")}</TableCell>
                         </TableRow>
                     </TableHead>
@@ -140,6 +144,9 @@ function PurchaseDetailsDialog({
                                       : ""}
                                 </TableCell>
                                 <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>₡{i.pricePerUnit.toFixed(2)}</TableCell>
+                                <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>₡{i.subtotal.toFixed(2)}</TableCell>
+                                <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>{i.taxRate}%</TableCell>
+                                <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>₡{i.taxAmount.toFixed(2)}</TableCell>
                                 <TableCell align="center" >₡{i.totalPrice.toFixed(2)}</TableCell>
                             </TableRow>
                             ))

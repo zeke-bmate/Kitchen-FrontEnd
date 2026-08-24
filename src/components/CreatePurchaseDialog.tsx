@@ -17,8 +17,9 @@ import {
   Autocomplete,
   Divider,
   Typography,
+  type SelectChangeEvent,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ChangeEvent, type SubmitEvent } from "react";
 import CloseIcon from "@mui/icons-material/Close";
 import type { Purchase } from "../types/purchase";
 import type { PurchaseItemInput } from "../types/purchaseItemInput";
@@ -91,10 +92,8 @@ function CreatePurchaseDialog({
   const draft = getPurchaseDraft();
   const [supplierId, setSupplierId] = useState<string>(draft?.supplierId ?? "");
   const [date, setDate] = useState<string>(draft?.date ?? "");
-  const [taxRate, setTaxRate] = useState<string>(String(draft?.taxRate ?? 0));
   const [supplierError, setSupplierError] = useState<string | null>(null);
   const [dateError, setDateError] = useState<string | null>(null);
-  const [taxRateError, setTaxRateError] = useState<string | null>(null);
   const [formError, setFormError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [purchaseItems, setPurchaseItems] = useState<PurchaseItemInput[]>(
@@ -108,8 +107,9 @@ function CreatePurchaseDialog({
             itemType: "INGREDIENT",
             orderUnits: "",
             quantity: "",
-            totalPrice: "",
-          },
+            subtotal: "",
+            taxRate: "0",
+          }
         ]
   );
   const [purchaseItemErrors, setPurchaseItemErrors] = useState<
@@ -117,16 +117,32 @@ function CreatePurchaseDialog({
   >([]);
 
   const subtotal = purchaseItems.reduce((sum, item) => {
-    const itemTotal = Number(item.totalPrice);
+    const itemSubtotal = Number(item.subtotal);
 
-    return sum + (Number.isNaN(itemTotal) ? 0 : itemTotal);
+    return sum + (Number.isNaN(itemSubtotal) ? 0 : itemSubtotal);
   }, 0);
 
-  const taxRateNum = Number(taxRate);
+  const taxAmount = purchaseItems.reduce((sum, item) => {
+    const itemSubtotal = Number(item.subtotal);
+    const itemTaxRate = Number(item.taxRate);
 
-  const taxAmount = Math.round(subtotal * ((Number.isNaN(taxRateNum) ? 0 : taxRateNum) / 100) * 100) / 100;
+    if (
+      Number.isNaN(itemSubtotal) ||
+      Number.isNaN(itemTaxRate)
+    ) {
+      return sum;
+    }
 
-  const total = Math.round((subtotal + taxAmount) * 100) / 100;
+    const itemTax =
+      Math.round(
+        itemSubtotal * (itemTaxRate / 100) * 100
+      ) / 100;
+
+    return sum + itemTax;
+  }, 0);
+
+  const total =
+    Math.round((subtotal + taxAmount) * 100) / 100;
   
   const handleAddItemClick = () => {
     setPurchaseItems((previousItems) => [
@@ -135,42 +151,65 @@ function CreatePurchaseDialog({
         itemType: "INGREDIENT",
         orderUnits: "",
         quantity: "",
-        totalPrice: "",
-      },
+        subtotal: "",
+        taxRate: "0",
+      }
     ]);
   };
 
-  const handleRemoveItemClick = (indexToRemove) => {
+  const handleRemoveItemClick = (indexToRemove: number) => {
     const filteredItems = purchaseItems.filter(
       (_, index) => index !== indexToRemove,
     );
     setPurchaseItems(filteredItems);
   };
 
-  const handleOrderUnitsChange = (index, event) => {
+  const handleOrderUnitsChange = (
+    index: number,
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const updatedItems = [...purchaseItems];
     updatedItems[index].orderUnits = event.target.value;
     setPurchaseItems(updatedItems);
   };
 
-  const handleQuantityChange = (index, event) => {
+  const handleQuantityChange = (
+    index: number,
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const updatedItems = [...purchaseItems];
     updatedItems[index].quantity = event.target.value;
     setPurchaseItems(updatedItems);
   };
 
-  const handleTotalPriceChange = (index, event) => {
+  const handleSubtotalChange = (
+    index: number,
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     const updatedItems = [...purchaseItems];
-    updatedItems[index].totalPrice = event.target.value;
+    updatedItems[index].subtotal = event.target.value;
     setPurchaseItems(updatedItems);
   };
 
-  const handleSupplierChange = (event) => {
+  const handleTaxRateChange = (
+    index: number,
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
+    const updatedItems = [...purchaseItems];
+    updatedItems[index].taxRate = event.target.value;
+    setPurchaseItems(updatedItems);
+  };
+
+  const handleSupplierChange = (
+    event: SelectChangeEvent<string>
+  ) => {
     setSupplierError(null);
     setSupplierId(event.target.value);
   };
 
-  const handleDateChange = (event) => {
+  const handleDateChange = (
+    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => {
     setDateError(null);
     setDate(event.target.value);
   };
@@ -205,7 +244,8 @@ function CreatePurchaseDialog({
           itemType,
           orderUnits: item.orderUnits,
           quantity: item.quantity,
-          totalPrice: item.totalPrice,
+          subtotal: item.subtotal,
+          taxRate: item.taxRate,
         };
       })
     );
@@ -215,7 +255,6 @@ function CreatePurchaseDialog({
     const draft = {
       supplierId,
       date,
-      taxRate,
       purchaseItems,
     };
   
@@ -223,7 +262,7 @@ function CreatePurchaseDialog({
       "purchaseDraft",
       JSON.stringify(draft),
     );
-  }, [supplierId, date, taxRate, purchaseItems]);
+  }, [supplierId, date, purchaseItems]);
 
   const handleIngredientChange = (
     index: number,
@@ -355,12 +394,13 @@ function CreatePurchaseDialog({
     );
   };
 
-  const handleSubmit = async (event) => {
+  const handleSubmit = async (
+    event: SubmitEvent<HTMLFormElement>
+  ) => {
     event.preventDefault();
     const trimmedSupplierId = supplierId.trim();
     setSupplierError(null);
     setDateError(null);
-    setTaxRateError(null);
     setFormError(null);
     if (!trimmedSupplierId) {
       setSupplierError(t("purchases.form.errors.supplierRequired"));
@@ -370,23 +410,17 @@ function CreatePurchaseDialog({
       setDateError(t("purchases.form.errors.dateRequired"));
       return;
     }
-    if (
-      Number.isNaN(taxRateNum) ||
-      taxRateNum < 0 ||
-      taxRateNum > 100
-    ) {
-      setTaxRateError(t("purchases.form.errors.taxRateInvalid"));
-      return;
-    }
 
-    const newErrors = [
-      {
+    const newErrors: PurchaseItemError[] =
+      purchaseItems.map(() => ({
         itemName: null,
         orderUnits: null,
         quantity: null,
-        totalPrice: null,
-      },
-    ];
+        subtotal: null,
+        taxRate: null,
+        canonicalUnit: null,
+      }));
+      
     let hasErrors = false;
 
     for (const p in purchaseItems) {
@@ -394,11 +428,14 @@ function CreatePurchaseDialog({
         itemName: null,
         orderUnits: null,
         quantity: null,
-        totalPrice: null,
+        subtotal: null,
+        taxRate: null,
+        canonicalUnit: null,
       };
       
       const quantityNum = Number(purchaseItems[p].quantity);
-      const totalPriceNum = Number(purchaseItems[p].totalPrice);
+      const subtotalNum = Number(purchaseItems[p].subtotal);
+      const itemTaxRateNum = Number(purchaseItems[p].taxRate);
       const item = purchaseItems[p];
 
       const hasIngredient =
@@ -432,9 +469,19 @@ function CreatePurchaseDialog({
           t("purchases.form.errors.quantityPositive");
         hasErrors = true;
       }
-      if (Number.isNaN(totalPriceNum) || totalPriceNum <= 0) {
-        newErrors[p].totalPrice =
-          t("purchases.form.errors.totalPricePositive");
+      if (Number.isNaN(subtotalNum) || subtotalNum <= 0) {
+        newErrors[p].subtotal =
+          t("purchases.form.errors.subtotalPositive");
+        hasErrors = true;
+      }
+
+      if (
+        Number.isNaN(itemTaxRateNum) ||
+        itemTaxRateNum < 0 ||
+        itemTaxRateNum > 100
+      ) {
+        newErrors[p].taxRate =
+          t("purchases.form.errors.taxRateInvalid");
         hasErrors = true;
       }
     }
@@ -448,11 +495,12 @@ function CreatePurchaseDialog({
     const data = {
       supplierId: trimmedSupplierId,
       date,
-      taxRate: taxRateNum,
+
       items: purchaseItems.map((item) => ({
         ...item,
         quantity: Number(item.quantity),
-        totalPrice: Number(item.totalPrice),
+        subtotal: Number(item.subtotal),
+        taxRate: Number(item.taxRate),
       })),
     };
 
@@ -475,14 +523,14 @@ function CreatePurchaseDialog({
       onClose();
       setSupplierId("");
       setDate("");
-      setTaxRate("0");
       setPurchaseItems([
         {
           itemType: "INGREDIENT",
           orderUnits: "",
           quantity: "",
-          totalPrice: "",
-        },
+          subtotal: "",
+          taxRate: "0",
+        }
       ]);
 
       setPurchaseItemErrors([]);
@@ -556,32 +604,6 @@ function CreatePurchaseDialog({
               slotProps={{
                 inputLabel: {
                   shrink: true,
-                },
-              }}
-            />
-            <TextField
-              type="number"
-              label={t("purchases.form.taxRate")}
-              value={taxRate}
-              onChange={(event) => {
-                setTaxRateError(null);
-                setTaxRate(event.target.value);
-              }}
-              error={!!taxRateError}
-              helperText={taxRateError ?? ""}
-              sx={{ width: 180 }}
-              slotProps={{
-                htmlInput: {
-                  min: 0,
-                  max: 100,
-                  step: "any",
-                },
-                input: {
-                  endAdornment: (
-                    <InputAdornment position="end">
-                      %
-                    </InputAdornment>
-                  ),
                 },
               }}
             />
@@ -782,22 +804,52 @@ function CreatePurchaseDialog({
               />
               <TextField
                 type="number"
-                error={!!purchaseItemErrors[index]?.totalPrice}
+                error={!!purchaseItemErrors[index]?.subtotal}
                 helperText={
-                  purchaseItemErrors[index]?.totalPrice
-                    ? purchaseItemErrors[index]?.totalPrice
-                    : ""
+                  purchaseItemErrors[index]?.subtotal ?? ""
                 }
-                value={purchaseItem.totalPrice}
-                onChange={(event) => handleTotalPriceChange(index, event)}
-                label={t("purchases.form.totalPrice")}
+                value={purchaseItem.subtotal}
+                onChange={(event) =>
+                  handleSubtotalChange(index, event)
+                }
+                label={t("purchases.form.subtotal")}
                 slotProps={{
                   htmlInput: {
+                    min: 0,
+                    step: "any",
+                  },
+                  input: {
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        ₡
+                      </InputAdornment>
+                    ),
+                  },
+                }}
+              />
+              <TextField
+                type="number"
+                error={!!purchaseItemErrors[index]?.taxRate}
+                helperText={
+                  purchaseItemErrors[index]?.taxRate ?? ""
+                }
+                value={purchaseItem.taxRate}
+                onChange={(event) =>
+                  handleTaxRateChange(index, event)
+                }
+                label={t("purchases.form.taxRate")}
+                sx={{ width: 130 }}
+                slotProps={{
+                  htmlInput: {
+                    min: 0,
+                    max: 100,
                     step: "any",
                   },
                   input: {
                     endAdornment: (
-                      <InputAdornment position="start">₡</InputAdornment>
+                      <InputAdornment position="end">
+                        %
+                      </InputAdornment>
                     ),
                   },
                 }}
@@ -846,7 +898,7 @@ function CreatePurchaseDialog({
                 sx={{ justifyContent: "space-between" }}
               >
                 <Typography>
-                  {t("purchases.form.tax")} ({Number.isNaN(taxRateNum) ? 0 : taxRateNum}%)
+                  {t("purchases.form.tax")}
                 </Typography>
           
                 <Typography>
