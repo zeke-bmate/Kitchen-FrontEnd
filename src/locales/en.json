@@ -16,6 +16,17 @@
     "title": "Purchases",
     "subtitle": "Track purchases by supplier.",
     "createPurchase": "Create Purchase",
+    "filters": {
+      "supplier": "Supplier",
+      "allSuppliers": "All suppliers",
+      "dateRange": "Date range",
+      "allTime": "All time",
+      "thisMonth": "This month",
+      "lastMonth": "Last month",
+      "customRange": "Custom range",
+      "startDate": "Start date",
+      "endDate": "End date"
+    },
     "table": {
       "date": "Date",
       "supplier": "Supplier",
@@ -86,12 +97,18 @@
       "saveChanges": "Save Changes",
       "updating": "Updating..."
     },
+    
     "summary": {
+      "title": "Purchase Summary",
       "purchases": "Purchases",
       "subtotal": "Subtotal",
       "tax": "Tax",
       "total": "Total"
     },
+    "pagination": {
+      "rowsPerPage": "Rows per page"
+    },
+
     "errors": {
       "loadFailed": "Failed to load purchases."
     }
