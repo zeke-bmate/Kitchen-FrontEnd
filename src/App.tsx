@@ -11,7 +11,7 @@ import LoginPage from "./pages/LoginPage";
 import ProtectedRoute from "./components/ProtectedRoute";
 import OrdersPage from "./pages/OrdersPage";
 import UsersPage from "./pages/UsersPage";
-import RoleRoute from "./routes/RoleRoute";
+import RequirePermission from "./routes/RequirePermission";
 
 function ProtectedLayout() {
   return (
@@ -31,54 +31,54 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route element={<ProtectedLayout />}>
           <Route path="/" element={
-            <RoleRoute allowedRoles={["Admin", "DeePlace", "Echo"]}>
+            <RequirePermission permission="dashboard.view">
               <SalesImportPage />
-            </RoleRoute>
+            </RequirePermission>
           } />
           <Route path="/orders" element={
-            <RoleRoute allowedRoles={["Admin", "DeePlace", "Echo"]}>
+            <RequirePermission permission="orders.view">
               <OrdersPage />
-            </RoleRoute>
+            </RequirePermission>
           } />
           <Route path="/raw-ingredients" element={
-            <RoleRoute allowedRoles={["Admin", "DeePlace", "Echo"]}>
+            <RequirePermission permission="inventory.view">
               <RawIngredientsPage />
-            </RoleRoute>
+            </RequirePermission>
           } />
           <Route path="/finished-inventory" element={
-            <RoleRoute allowedRoles={["Admin", "DeePlace", "Echo"]}>
+            <RequirePermission permission="finished_inventory.view">
               <FinishedInventoryPage />
-            </RoleRoute>
+            </RequirePermission>
           } />
           <Route path="/production-batches" element={
-            <RoleRoute allowedRoles={["Admin", "Echo"]}>
+            <RequirePermission permission="production.view">
               <ProductionBatchesPage />
-            </RoleRoute>
+            </RequirePermission>
           } />
           <Route path="/recipes" element={
-            <RoleRoute allowedRoles={["Admin", "DeePlace", "Echo"]}>
+            <RequirePermission permission="recipes.view">
               <RecipesPage />
-            </RoleRoute>
+            </RequirePermission>
           } />
           <Route path="/suppliers" element={
-            <RoleRoute allowedRoles={["Admin", "Echo"]}>
+            <RequirePermission permission="suppliers.view">
               <SuppliersPage />
-            </RoleRoute>
+            </RequirePermission>
           } />
           <Route path="/purchases" element={
-            <RoleRoute allowedRoles={["Admin", "Echo"]}>
+            <RequirePermission permission="purchases.view">
               <PurchasesPage />
-            </RoleRoute>
+            </RequirePermission>
           } />
           <Route path="/sales-import" element={
-            <RoleRoute allowedRoles={["Admin", "DeePlace", "Echo"]}>
+            <RequirePermission permission="sales.import">
               <SalesImportPage />
-            </RoleRoute>
+            </RequirePermission>
           } />
           <Route path="/users" element={
-            <RoleRoute allowedRoles={["Admin"]}>
+            <RequirePermission permission="users.view">
               <UsersPage />
-            </RoleRoute>
+            </RequirePermission>
           } />
         </Route>
       </Routes>

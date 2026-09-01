@@ -1,11 +1,20 @@
-import { createContext, useState, type ReactNode } from "react";
+import {
+  createContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 import { jwtDecode } from "jwt-decode";
+import type { CurrentUser } from "../types/currentUser";
+import apiFetch from "../api/apiFetch";
 
 type AuthContextType = {
-    isAuthenticated: boolean;
-    role: string | null;
-    login: (token: string) => void;
-    logout: () => void;
+  isAuthenticated: boolean;
+  role: string | null;
+  user: CurrentUser | null;
+  loading: boolean;
+  login: (token: string) => Promise<void>;
+  logout: () => void;
 };
 
 type JwtPayload = {
@@ -27,23 +36,63 @@ function AuthProvider({ children }: AuthProviderProps) {
     const [role, setRole] = useState<string | null>(
       sessionStorage.getItem("role")
     );
+    const [user, setUser] = useState<CurrentUser | null>(null);
+    const [loading, setLoading] = useState(true);
 
-    function login(token: string) {
-        const decoded = jwtDecode<JwtPayload>(token);
+    async function loadCurrentUser() {
+      const token = sessionStorage.getItem("token");
 
-        sessionStorage.setItem("token", token);
-        sessionStorage.setItem("role", decoded.role);
+      if (!token) {
+        setUser(null);
+        return;
+      }
+    
+      try {
+        const response = await apiFetch("/api/me");
+      
+        if (!response.ok) {
+          setUser(null);
+          return;
+        }
+      
+        const data: CurrentUser = await response.json();
+      
+        setUser(data);
+        setRole(data.role);
+      } catch (error) {
+        console.error(error);
+        setUser(null);
+      }
+    }
 
-        setRole(decoded.role);
-        setIsAuthenticated(true);
+    useEffect(() => {
+      const initializeAuth = async () => {
+        await loadCurrentUser();
+        setLoading(false);
+      };
+    
+      initializeAuth();
+    }, []);
+
+    async function login(token: string) {
+      const decoded = jwtDecode<JwtPayload>(token);
+
+      sessionStorage.setItem("token", token);
+      sessionStorage.setItem("role", decoded.role);
+
+      setRole(decoded.role);
+      setIsAuthenticated(true);
+
+      await loadCurrentUser();
     }
 
     function logout() {
-        sessionStorage.removeItem("token");
-        sessionStorage.removeItem("role");
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("role");
 
-        setRole(null);
-        setIsAuthenticated(false);
+      setRole(null);
+      setUser(null);
+      setIsAuthenticated(false);
     }
 
     return (
@@ -51,6 +100,8 @@ function AuthProvider({ children }: AuthProviderProps) {
         value={{
           isAuthenticated,
           role,
+          user,
+          loading,
           login,
           logout,
         }}

@@ -7,19 +7,66 @@ import { useState } from "react";
 import MenuIcon from "@mui/icons-material/Menu";
 import type { SelectChangeEvent } from "@mui/material";
 
-const pages = [{ label: "navbar.dashboard", path: '/sales-import', icon: HomeOutlined, roles: ["Admin", "DeePlace", "Echo"]},
-               { label: 'navbar.orders', path: '/orders', icon: ReceiptOutlined, roles: ["Admin", "DeePlace", "Echo"]}, 
-               { label: 'navbar.suppliers', path: '/suppliers', icon: LocalShipping, roles: ["Admin", "Echo"]},
-               { label: 'navbar.purchases', path: '/purchases', icon: ShoppingCart, roles: ["Admin", "Echo"]},
-               { label: 'navbar.ingredients', path: '/raw-ingredients', icon: Inventory2Outlined, roles: ["Admin", "Echo"]},
-               { label: 'navbar.recipes', path: '/recipes', icon: MenuBook, roles: ["Admin", "DeePlace", "Echo"]},
-               { label: 'navbar.production', path: '/production-batches', icon: LocalDining, roles: ["Admin", "Echo"]},
-               { label: 'navbar.inventory', path: '/finished-inventory', icon: Warehouse, roles: ["Admin", "DeePlace", "Echo"]},
-               { label: 'navbar.users', path: '/users', icon: GroupOutlined, roles: ["Admin"]},
+const pages = [
+  {
+    label: "navbar.dashboard",
+    path: "/sales-import",
+    icon: HomeOutlined,
+    permission: "dashboard.view",
+  },
+  {
+    label: "navbar.orders",
+    path: "/orders",
+    icon: ReceiptOutlined,
+    permission: "orders.view",
+  },
+  {
+    label: "navbar.suppliers",
+    path: "/suppliers",
+    icon: LocalShipping,
+    permission: "suppliers.view",
+  },
+  {
+    label: "navbar.purchases",
+    path: "/purchases",
+    icon: ShoppingCart,
+    permission: "purchases.view",
+  },
+  {
+    label: "navbar.ingredients",
+    path: "/raw-ingredients",
+    icon: Inventory2Outlined,
+    permission: "inventory.view",
+  },
+  {
+    label: "navbar.recipes",
+    path: "/recipes",
+    icon: MenuBook,
+    permission: "recipes.view",
+  },
+  {
+    label: "navbar.production",
+    path: "/production-batches",
+    icon: LocalDining,
+    permission: "production.view",
+  },
+  {
+    label: "navbar.inventory",
+    path: "/finished-inventory",
+    icon: Warehouse,
+    permission: "finished_inventory.view",
+  },
+  {
+    label: "navbar.users",
+    path: "/users",
+    icon: GroupOutlined,
+    permission: "users.view",
+  },
 ];
+
 function NavBar() {
 
-    const { logout, role } = useAuth();
+    const { logout, user } = useAuth();
     const [menuOpen, setMenuOpen] = useState(false);
     const { t, i18n } = useTranslation();
 
@@ -42,9 +89,9 @@ function NavBar() {
         logout();
     }
 
-    const visiblePages = pages.filter(
-                          (page) => !page.roles || (role && page.roles.includes(role))
-                        );
+    const visiblePages = pages.filter((page) =>
+      user?.permissions.includes(page.permission)
+    );
 
     return (
         <>
