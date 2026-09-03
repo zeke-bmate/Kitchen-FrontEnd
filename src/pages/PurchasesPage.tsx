@@ -14,7 +14,6 @@ import {
   Button,
   Stack,
   Divider,
-  IconButton,
   TablePagination,
   FormControl,
   InputLabel,
@@ -29,11 +28,10 @@ import CreatePurchaseDialog from "../components/CreatePurchaseDialog";
 import apiFetch from "../api/apiFetch";
 import EditPurchaseDialog from "../components/EditPurchaseDialog";
 import { useTranslation } from "react-i18next";
-import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
-import ChevronRightIcon from "@mui/icons-material/ChevronRight";
+import useAuth from "../context/useAuth";
 
 function PurchasesPage() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const [purchases, setPurchases] = useState<Purchase[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [error, setError] = useState<string | null>(null);
@@ -60,6 +58,10 @@ function PurchasesPage() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
   const [datePreset, setDatePreset] = useState("all");
+  const { user } = useAuth();
+
+  const canCreatePurchase = user?.permissions.includes("purchases.create") ?? false;
+  const canViewCost = user?.permissions.includes("purchases.view_cost") ?? false;
 
   const handlePurchaseClick = (purchase: Purchase) => {
     setSelectedPurchase(purchase);
@@ -410,86 +412,89 @@ function PurchasesPage() {
             {t("purchases.subtitle")}
           </Typography>
           
-          <Button
-            variant="contained"
-            onClick={handleCreatePurchaseClick}
-          >
-            {t("purchases.createPurchase")}
-          </Button>
+          {canCreatePurchase && (
+            <Button
+              variant="contained"
+              onClick={handleCreatePurchaseClick}
+            >
+              {t("purchases.createPurchase")}
+            </Button>
+          )}
         </Box>
-          
-        <Paper
-          sx={{
-            p: 2,
-            width: 300,
-            borderRadius: 3,
-          }}
-        >
-          <Typography
+        {canViewCost && (
+          <Paper
             sx={{
-              fontWeight: 700,
-              mb: 2,
+              p: 2,
+              width: 300,
+              borderRadius: 3,
             }}
           >
-            {t("purchases.summary.title")}
-          </Typography>
-          
-          <Stack spacing={1}>
-            <Stack
-              direction="row"
-              sx={{ justifyContent: "space-between" }}
+            <Typography
+              sx={{
+                fontWeight: 700,
+                mb: 2,
+              }}
             >
-              <Typography>
-                {t("purchases.summary.purchases")}
-              </Typography>
-          
-              <Typography>
-                {purchaseSummary.purchaseCount}
-              </Typography>
+              {t("purchases.summary.title")}
+            </Typography>
+            
+            <Stack spacing={1}>
+              <Stack
+                direction="row"
+                sx={{ justifyContent: "space-between" }}
+              >
+                <Typography>
+                  {t("purchases.summary.purchases")}
+                </Typography>
+            
+                <Typography>
+                  {purchaseSummary.purchaseCount}
+                </Typography>
+              </Stack>
+            
+              <Stack
+                direction="row"
+                sx={{ justifyContent: "space-between" }}
+              >
+                <Typography>
+                  {t("purchases.summary.subtotal")}
+                </Typography>
+            
+                <Typography>
+                  ₡{purchaseSummary.subtotal.toFixed(2)}
+                </Typography>
+              </Stack>
+            
+              <Stack
+                direction="row"
+                sx={{ justifyContent: "space-between" }}
+              >
+                <Typography>
+                  {t("purchases.summary.tax")}
+                </Typography>
+            
+                <Typography>
+                  ₡{purchaseSummary.taxAmount.toFixed(2)}
+                </Typography>
+              </Stack>
+            
+              <Divider />
+            
+              <Stack
+                direction="row"
+                sx={{ justifyContent: "space-between" }}
+              >
+                <Typography sx={{ fontWeight: 700 }}>
+                  {t("purchases.summary.total")}
+                </Typography>
+            
+                <Typography sx={{ fontWeight: 700 }}>
+                  ₡{purchaseSummary.totalPrice.toFixed(2)}
+                </Typography>
+              </Stack>
             </Stack>
-          
-            <Stack
-              direction="row"
-              sx={{ justifyContent: "space-between" }}
-            >
-              <Typography>
-                {t("purchases.summary.subtotal")}
-              </Typography>
-          
-              <Typography>
-                ₡{purchaseSummary.subtotal.toFixed(2)}
-              </Typography>
-            </Stack>
-          
-            <Stack
-              direction="row"
-              sx={{ justifyContent: "space-between" }}
-            >
-              <Typography>
-                {t("purchases.summary.tax")}
-              </Typography>
-          
-              <Typography>
-                ₡{purchaseSummary.taxAmount.toFixed(2)}
-              </Typography>
-            </Stack>
-          
-            <Divider />
-          
-            <Stack
-              direction="row"
-              sx={{ justifyContent: "space-between" }}
-            >
-              <Typography sx={{ fontWeight: 700 }}>
-                {t("purchases.summary.total")}
-              </Typography>
-          
-              <Typography sx={{ fontWeight: 700 }}>
-                ₡{purchaseSummary.totalPrice.toFixed(2)}
-              </Typography>
-            </Stack>
-          </Stack>
-        </Paper>
+          </Paper> 
+        )}
       </Stack>
 
       <Stack
@@ -617,39 +622,43 @@ function PurchasesPage() {
                   >
                     {t("purchases.table.itemsCount")}
                   </TableCell>
-                  <TableCell
-                    align="center"
-                    sx={{
-                      color: "white",
-                      fontWeight: 700,
-                      backgroundColor: "primary.main",
-                      borderBottom: "1px solid #e0e0e0",
-                    }}
-                  >
-                    {t("purchases.table.subtotal")}
-                  </TableCell>
-                  <TableCell
-                    align="center"
-                    sx={{
-                      color: "white",
-                      fontWeight: 700,
-                      backgroundColor: "primary.main",
-                      borderBottom: "1px solid #e0e0e0",
-                    }}
-                  >
-                    {t("purchases.table.tax")}
-                  </TableCell>
-                  <TableCell
-                    align="center"
-                    sx={{
-                      color: "white",
-                      fontWeight: 700,
-                      backgroundColor: "primary.main",
-                      borderBottom: "1px solid #e0e0e0",
-                    }}
-                  >
-                    {t("purchases.table.totalPrice")}
-                  </TableCell>
+                  {canViewCost && (
+                    <>
+                      <TableCell
+                        align="center"
+                        sx={{
+                          color: "white",
+                          fontWeight: 700,
+                          backgroundColor: "primary.main",
+                          borderBottom: "1px solid #e0e0e0",
+                        }}
+                      >
+                        {t("purchases.table.subtotal")}
+                      </TableCell>
+                      <TableCell
+                        align="center"
+                        sx={{
+                          color: "white",
+                          fontWeight: 700,
+                          backgroundColor: "primary.main",
+                          borderBottom: "1px solid #e0e0e0",
+                        }}
+                      >
+                        {t("purchases.table.tax")}
+                      </TableCell>
+                      <TableCell
+                        align="center"
+                        sx={{
+                          color: "white",
+                          fontWeight: 700,
+                          backgroundColor: "primary.main",
+                          borderBottom: "1px solid #e0e0e0",
+                        }}
+                      >
+                        {t("purchases.table.totalPrice")}
+                      </TableCell>
+                    </>
+                  )}
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -678,9 +687,13 @@ function PurchasesPage() {
                     >
                       {p.items.length}
                     </TableCell>
-                    <TableCell align="center" sx={{ borderRight: "1px solid #e0e0e0" }}>{`₡${p.subtotal.toFixed(2)}`}</TableCell>
-                    <TableCell align="center" sx={{ borderRight: "1px solid #e0e0e0" }}>{`₡${p.taxAmount.toFixed(2)}`}</TableCell>
-                    <TableCell align="center">{`₡${p.totalPrice.toFixed(2)}`}</TableCell>
+                    {canViewCost && (
+                      <>
+                        <TableCell align="center" sx={{ borderRight: "1px solid #e0e0e0" }}>{`₡${p.subtotal?.toFixed(2)}`}</TableCell>
+                        <TableCell align="center" sx={{ borderRight: "1px solid #e0e0e0" }}>{`₡${p.taxAmount?.toFixed(2)}`}</TableCell>
+                        <TableCell align="center">{`₡${p.totalPrice?.toFixed(2)}`}</TableCell>
+                      </>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>

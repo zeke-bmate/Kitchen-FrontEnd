@@ -1,6 +1,5 @@
 import { useEffect, useState } from "react";
 import type { RawIngredient } from "../types/rawIngredient";
-import type { MeasurementUnit } from "../types/measurementUnit";
 import {
   Alert,
   Box,
@@ -15,27 +14,13 @@ import {
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
 import apiFetch from "../api/apiFetch";
+import { useTranslation } from "react-i18next";
 
 type AdjustInventoryDialogProps = {
   open: boolean;
   ingredient: RawIngredient | null;
   onClose: () => void;
   onInventoryUpdated: (ingredient: RawIngredient) => void;
-};
-
-const formatUnit = (unit: MeasurementUnit) => {
-  switch (unit) {
-    case "KG":
-      return "kg";
-    case "L":
-      return "L";
-    case "EACH":
-      return "each";
-    case "BUNCH":
-      return "bunch";
-    case "HEAD":
-      return "head";
-  }
 };
 
 function AdjustmentInventoryDialog({
@@ -53,6 +38,7 @@ function AdjustmentInventoryDialog({
   const [formError, setFormError] =
     useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const { t } = useTranslation();
 
   const handleQuantityChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -89,7 +75,7 @@ function AdjustmentInventoryDialog({
       quantityNumber < 0
     ) {
       setQuantityError(
-        "Quantity must be a non-negative number."
+        t("ingredients.adjustDialog.errors.quantityInvalid")
       );
       return;
     }
@@ -117,7 +103,7 @@ function AdjustmentInventoryDialog({
         const errorData = await response.json();
 
         throw new Error(
-          errorData.error || "Failed to adjust inventory.",
+          errorData.error || t("ingredients.adjustDialog.errors.adjustFailed"),
         );
       }
 
@@ -130,7 +116,7 @@ function AdjustmentInventoryDialog({
       if (error instanceof Error) {
         setFormError(error.message);
       } else {
-        setFormError("Failed to adjust inventory.");
+        setFormError(t("ingredients.adjustDialog.errors.adjustFailed"));
       }
     } finally {
       setSubmitting(false);
@@ -164,7 +150,7 @@ function AdjustmentInventoryDialog({
       }}
     >
       <DialogTitle sx={{ fontWeight: 700, pr: 6 }}>
-        Adjust Inventory
+        {t("ingredients.adjustDialog.title")}
       </DialogTitle>
 
       <IconButton
@@ -184,15 +170,15 @@ function AdjustmentInventoryDialog({
         <form onSubmit={handleSubmit}>
           <Stack spacing={3} sx={{ mb: 3 }}>
             <Typography>
-              <strong>Ingredient: </strong>
+              <strong>{t("ingredients.adjustDialog.ingredient")}: </strong>
               {ingredient?.name}
             </Typography>
 
             <Typography>
-              <strong>Current Inventory: </strong>
+              <strong>{t("ingredients.adjustDialog.currentInventory")}: </strong>
               {ingredient &&
-                `${ingredient.currentQuantity.toFixed(2)} ${formatUnit(
-                  ingredient.canonicalUnit
+                `${ingredient.currentQuantity.toFixed(2)} ${t(
+                  `units.${ingredient.canonicalUnit}`
                 )}`}
             </Typography>
 
@@ -202,10 +188,10 @@ function AdjustmentInventoryDialog({
               helperText={quantityError ?? ""}
               label={
                 ingredient
-                  ? `New Quantity (${formatUnit(
-                      ingredient.canonicalUnit
-                    )})`
-                  : "New Quantity"
+                  ? t("ingredients.adjustDialog.newQuantityWithUnit", {
+                      unit: t(`units.${ingredient.canonicalUnit}`),
+                    })
+                  : t("ingredients.adjustDialog.newQuantity")
               }
               value={currentQuantity}
               onChange={handleQuantityChange}
@@ -218,7 +204,7 @@ function AdjustmentInventoryDialog({
 
             <TextField
               fullWidth
-              label="Reason"
+              label={t("ingredients.adjustDialog.reason")}
               value={reason}
               onChange={handleReasonChange}
               error={!!reasonError}
@@ -238,8 +224,8 @@ function AdjustmentInventoryDialog({
               disabled={submitting}
             >
               {submitting
-                ? "Adjusting..."
-                : "Adjust Inventory"}
+                ? t("ingredients.adjustDialog.adjusting")
+                : t("ingredients.adjustDialog.submit")}
             </Button>
           </Box>
         </form>

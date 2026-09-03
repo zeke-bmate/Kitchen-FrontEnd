@@ -189,9 +189,202 @@
       }
     }
   },
+  "ingredients": {
+    "title": "Ingredientes",
+    "subtitle": "Controle el inventario actual de ingredientes según su unidad estándar.",
+    "form": {
+      "name": "Nombre",
+      "quantity": "Cantidad",
+      "unit": "Unidad",
+      "submit": "Agregar ingrediente",
+      "adding": "Agregando..."
+    },
+    "table": {
+      "name": "Nombre",
+      "currentQuantity": "Cantidad actual",
+      "createdAt": "Fecha de creación",
+      "actions": "Acciones"
+    },
+    "actions": {
+      "adjust": "Ajustar",
+      "transfer": "Transferir"
+    },
+    "loading": "Cargando...",
+    "empty": "No se encontraron ingredientes.",
+    "errors": {
+      "nameRequired": "El nombre no puede estar vacío.",
+      "quantityInvalid": "La cantidad actual debe ser un número no negativo.",
+      "createFailed": "No se pudo crear el ingrediente.",
+      "loadFailed": "No se pudieron cargar los datos de los ingredientes."
+    },
+    "adjustDialog": {
+      "title": "Ajustar inventario",
+      "ingredient": "Ingrediente",
+      "currentInventory": "Inventario actual",
+      "newQuantity": "Nueva cantidad",
+      "newQuantityWithUnit": "Nueva cantidad ({{unit}})",
+      "reason": "Motivo",
+      "submit": "Ajustar inventario",
+      "adjusting": "Ajustando...",
+      "errors": {
+        "quantityInvalid": "La cantidad debe ser un número no negativo.",
+        "adjustFailed": "No se pudo ajustar el inventario."
+      }
+    },
+    "history": {
+      "title": "Historial de inventario",
+      "currentInventory": "Inventario actual",
+      "empty": "No se encontró historial de inventario.",
+      "table": {
+        "date": "Fecha",
+        "type": "Tipo",
+        "change": "Cambio",
+        "previous": "Anterior",
+        "new": "Nuevo",
+        "sourceReason": "Origen / Motivo"
+      },
+      "types": {
+        "PURCHASE": "Compra",
+        "PRODUCTION": "Producción",
+        "ADJUSTMENT": "Ajuste",
+        "TRANSFER_IN": "Transferencia de entrada",
+        "TRANSFER_OUT": "Transferencia de salida"
+      },
+      "sources": {
+        "purchase": "Compra",
+        "production": "Producción",
+        "manualAdjustment": "Ajuste manual",
+        "inventoryTransfer": "Transferencia de inventario"
+      },
+      "errors": {
+        "loadFailed": "No se pudo cargar el historial de inventario."
+      }
+    },
+    "transferDialog": {
+      "title": "Transferir inventario",
+      "ingredient": "Ingrediente",
+      "echoKitchenInventory": "Inventario de Echo Kitchen",
+      "direction": "Dirección",
+      "quantity": "Cantidad",
+      "submit": "Transferir",
+      "transferring": "Transfiriendo...",
+      "directions": {
+        "echoToDee": "Echo Kitchen → DeePlace",
+        "deeToEcho": "DeePlace → Echo Kitchen"
+      },
+      "errors": {
+        "quantityPositive": "La cantidad a transferir debe ser mayor que cero.",
+        "exceedsEchoInventory": "La cantidad a transferir no puede superar el inventario de Echo Kitchen.",
+        "transferFailed": "No se pudo transferir el inventario."
+      }
+    },
+    "transferHistory": {
+      "title": "Historial de transferencias",
+      "empty": "No se encontró historial de transferencias.",
+      "table": {
+        "date": "Fecha",
+        "direction": "Dirección",
+        "ingredient": "Ingrediente",
+        "quantity": "Cantidad"
+      },
+      "errors": {
+        "loadFailed": "No se pudo cargar el historial de transferencias."
+      }
+    }
+  },
+  "locations": {
+    "ECHO_KITCHEN": "Echo Kitchen",
+    "DEE_PLACE": "DeePlace",
+    "ECHO_POKER": "Echo Poker",
+    "ECHO_EVENTS": "Echo Events"
+  },
+  "units": {
+    "KG": "kg",
+    "L": "L",
+    "EACH": "unidad",
+    "BUNCH": "manojo",
+    "HEAD": "pieza",
+    "BOX": "caja",
+    "CASE": "caja",
+    "PACK": "paquete",
+    "ROLL": "rollo",
+    "BOTTLE": "botella"
+  },
   "supplyItems": {
     "errors": {
       "loadFailed": "No se pudieron cargar los suministros."
+    }
+  },
+  "users": {
+    "details": {
+      "title": "Detalles del usuario",
+      "name": "Nombre",
+      "username": "Nombre de usuario",
+      "role": "Rol",
+      "createdAt": "Fecha de creación"
+    },
+    "permissions": {
+      "title": "Permisos",
+      "role": "Rol",
+      "custom": "Personalizado",
+      "save": "Guardar permisos",
+      "resetToRoleDefaults": "Restablecer permisos del rol",
+      "adminManaged": "Los permisos de administrador son gestionados por el rol de administrador y no se pueden personalizar por usuario.",
+      "dashboard.view": "Ver panel de control",
+
+      "finished_inventory.view": "Ver inventario de productos terminados",
+
+      "inventory.view": "Ver inventario",
+      "inventory.adjust": "Ajustar cantidades de inventario",
+      "inventory.transactions.view": "Ver historial de transacciones de inventario",
+      "inventory.transfer.view": "Ver transferencias de inventario",
+      "inventory.transfer.create": "Crear transferencias de inventario",
+
+      "orders.view": "Ver pedidos",
+      "orders.create": "Crear pedidos",
+      "orders.update_status": "Actualizar estado de pedidos",
+
+      "permissions.view": "Ver permisos",
+      "permissions.manage": "Gestionar permisos de roles",
+
+      "production.view": "Ver lotes de producción",
+      "production.create": "Crear lotes de producción",
+
+      "purchases.view": "Ver compras",
+      "purchases.create": "Crear compras",
+      "purchases.edit": "Editar compras",
+      "purchases.view_cost": "Ver precios y costos de compras",
+
+      "recipes.view": "Ver recetas",
+      "recipes.create": "Crear recetas",
+      "recipes.view_cost": "Ver información de costos de recetas",
+
+      "roles.view": "Ver roles",
+
+      "sales.view": "Ver ventas",
+      "sales.create": "Crear ventas",
+      "sales.import": "Importar ventas desde el POS",
+      "sales.mapping.manage": "Gestionar asignaciones de productos del POS",
+
+      "suppliers.view": "Ver proveedores",
+      "suppliers.create": "Crear proveedores",
+
+      "users.view": "Ver usuarios",
+      "users.create": "Crear usuarios"
+    },
+    "permissionModules": {
+      "dashboard": "Panel de control",
+      "finished_inventory": "Inventario de productos terminados",
+      "inventory": "Inventario",
+      "orders": "Pedidos",
+      "permissions": "Permisos",
+      "production": "Producción",
+      "purchases": "Compras",
+      "recipes": "Recetas",
+      "roles": "Roles",
+      "sales": "Ventas",
+      "suppliers": "Proveedores",
+      "users": "Usuarios"
     }
   },
   "common": {

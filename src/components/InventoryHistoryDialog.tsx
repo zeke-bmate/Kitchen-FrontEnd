@@ -17,90 +17,17 @@ import {
   Box,
   Stack,
 } from "@mui/material";
-
+import { useTranslation } from "react-i18next";
 import type { RawIngredient } from "../types/rawIngredient";
 import type { InventoryTransaction } from "../types/inventoryTransaction";
 import apiFetch from "../api/apiFetch";
 import CloseIcon from '@mui/icons-material/Close';
 import type { MeasurementUnit } from "../types/measurementUnit";
 
-const formatUnit = (unit: MeasurementUnit) => {
-  switch (unit) {
-    case "KG":
-      return "kg";
-    case "L":
-      return "L";
-    case "EACH":
-      return "each";
-    case "BUNCH":
-      return "bunch";
-    case "HEAD":
-      return "head";
-  }
-};
-
-const formatLocation = (location: string) => {
-  switch (location) {
-    case "ECHO_KITCHEN":
-      return "Echo Kitchen";
-    case "DEE_PLACE":
-      return "DeePlace";
-    case "ECHO_POKER":
-      return "Echo Poker";
-    case "ECHO_EVENTS":
-      return "Echo Events";
-    default:
-      return location;
-  }
-};
-
 type InventoryHistoryDialogProps = {
   open: boolean;
   ingredient: RawIngredient | null;
   onClose: () => void;
-};
-
-const getSourceOrReason = (
-  transaction: InventoryTransaction
-) => {
-  if (transaction.type === "PURCHASE") {
-    if (!transaction.purchase) {
-      return "Purchase";
-    }
-
-    return `${transaction.purchase.supplier.name} — ${new Date(
-      transaction.purchase.date
-    ).toLocaleDateString()}`;
-  }
-
-  if (transaction.type === "PRODUCTION") {
-    if (!transaction.productionBatch) {
-      return "Production";
-    }
-
-    return transaction.productionBatch.recipe.name;
-  }
-
-  if (transaction.type === "ADJUSTMENT") {
-    return transaction.reason || "Manual adjustment";
-  }
-
-  if (
-    transaction.type === "TRANSFER_IN" ||
-    transaction.type === "TRANSFER_OUT"
-  ) {
-    if (!transaction.inventoryTransfer) {
-      return "Inventory transfer";
-    }
-
-    return `${formatLocation(
-      transaction.inventoryTransfer.sourceLocation
-    )} → ${formatLocation(
-      transaction.inventoryTransfer.destinationLocation
-    )}`;
-  }
-
-  return transaction.reason || "—";
 };
 
 function InventoryHistoryDialog({
@@ -112,6 +39,65 @@ function InventoryHistoryDialog({
   const [transactions, setTransactions] = useState<InventoryTransaction[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation();
+
+  const getSourceOrReason = (
+    transaction: InventoryTransaction
+  ) => {
+    if (transaction.type === "PURCHASE") {
+      if (!transaction.purchase) {
+        return t("ingredients.history.sources.purchase");
+      }
+
+      return `${transaction.purchase.supplier.name} — ${new Date(
+        transaction.purchase.date
+      ).toLocaleDateString()}`;
+    }
+
+    if (transaction.type === "PRODUCTION") {
+      if (!transaction.productionBatch) {
+        return t("ingredients.history.sources.production");
+      }
+
+      return transaction.productionBatch.recipe.name;
+    }
+
+    if (transaction.type === "ADJUSTMENT") {
+      return (
+        transaction.reason ||
+        t("ingredients.history.sources.manualAdjustment")
+      );
+    }
+
+    if (
+      transaction.type === "TRANSFER_IN" ||
+      transaction.type === "TRANSFER_OUT"
+    ) {
+      if (!transaction.inventoryTransfer) {
+        return t("ingredients.history.sources.inventoryTransfer");
+      }
+
+      const source = t(
+        `locations.${transaction.inventoryTransfer.sourceLocation}`,
+        {
+          defaultValue:
+            transaction.inventoryTransfer.sourceLocation,
+        }
+      );
+
+      const destination = t(
+        `locations.${transaction.inventoryTransfer.destinationLocation}`,
+        {
+          defaultValue:
+            transaction.inventoryTransfer.destinationLocation,
+        }
+      );
+
+      return `${source} → ${destination}`;
+    }
+
+    return transaction.reason || "—";
+  };
 
   useEffect(() => {
     if (!open || !ingredient) {
@@ -132,7 +118,7 @@ function InventoryHistoryDialog({
           const errorData = await response.json();
 
           throw new Error(
-            errorData.error || "Failed to load inventory history."
+            errorData.error || t("ingredients.history.errors.loadFailed")
           );
         }
 
@@ -143,7 +129,7 @@ function InventoryHistoryDialog({
         if (error instanceof Error) {
           setError(error.message);
         } else {
-          setError("Failed to load inventory history.");
+          setError(t("ingredients.history.errors.loadFailed"));
         }
       } finally {
         setIsLoading(false);
@@ -162,7 +148,7 @@ function InventoryHistoryDialog({
         ? `+${change.toFixed(2)}`
         : change.toFixed(2);
 
-    return `${formattedChange} ${formatUnit(unit)}`;
+    return `${formattedChange} ${t(`units.${unit}`)}`;
   };
 
   return (
@@ -178,7 +164,7 @@ function InventoryHistoryDialog({
             }}
     >
       <DialogTitle sx={{ fontWeight: 700, pr: 6 }}>
-        Inventory History
+        {t("ingredients.history.title")}
         {ingredient && ` — ${ingredient.name}`}
 
         <IconButton
@@ -207,9 +193,11 @@ function InventoryHistoryDialog({
               }}
           >
             <Typography sx={{ mb: 2 }}>
-              <strong>Current inventory: </strong>
+              <strong>
+                {t("ingredients.history.currentInventory")}:
+              </strong>{" "}
               {ingredient.currentQuantity.toFixed(2)}{" "}
-              {formatUnit(ingredient.canonicalUnit)}
+              {t(`units.${ingredient.canonicalUnit}`)}
             </Typography>
           </Box>
           </Stack>
@@ -224,18 +212,18 @@ function InventoryHistoryDialog({
         {isLoading ? (
           <CircularProgress />
         ) : transactions.length === 0 ? (
-          <Typography>No inventory history found.</Typography>
+          <Typography>{t("ingredients.history.empty")}</Typography>
         ) : (
           <TableContainer component={Paper} sx={{ borderRadius: 3, overflow: "hidden" }}>
             <Table size="small">
               <TableHead>
                 <TableRow>
-                  <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'}}>Date</TableCell>
-                  <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'}}>Type</TableCell>
-                  <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'}}>Change</TableCell>
-                  <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'}}>Previous</TableCell>
-                  <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'}}>New</TableCell>
-                  <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'}}>Source / Reason</TableCell>
+                  <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'}}>{t("ingredients.history.table.date")}</TableCell>
+                  <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'}}>{t("ingredients.history.table.type")}</TableCell>
+                  <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'}}>{t("ingredients.history.table.change")}</TableCell>
+                  <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'}}>{t("ingredients.history.table.previous")}</TableCell>
+                  <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'}}>{t("ingredients.history.table.new")}</TableCell>
+                  <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'}}>{t("ingredients.history.table.sourceReason")}</TableCell>
                 </TableRow>
               </TableHead>
 
@@ -248,7 +236,10 @@ function InventoryHistoryDialog({
                       ).toLocaleString()}
                     </TableCell>
 
-                    <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>{transaction.type}</TableCell>
+                    <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>{t(`ingredients.history.types.${transaction.type}`, {
+                                                                                            defaultValue: transaction.type,
+                                                                                          })}
+                    </TableCell>
 
                     <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>
                       {ingredient &&
@@ -260,12 +251,14 @@ function InventoryHistoryDialog({
 
                     <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>
                       {transaction.previousQuantity.toFixed(2)}{" "}
-                      {ingredient && formatUnit(ingredient.canonicalUnit)}
+                      {ingredient &&
+                        t(`units.${ingredient.canonicalUnit}`)}
                     </TableCell>
 
                     <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>
                       {transaction.newQuantity.toFixed(2)}{" "}
-                      {ingredient && formatUnit(ingredient.canonicalUnit)}
+                      {ingredient &&
+                        t(`units.${ingredient.canonicalUnit}`)}
                     </TableCell>
 
                     <TableCell align="center">

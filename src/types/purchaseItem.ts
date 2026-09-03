@@ -8,11 +8,11 @@ export type PurchaseItem = {
   orderUnits: string | null;
   quantity: number;
 
-  pricePerUnit: number;
-  subtotal: number;
-  taxRate: number;
-  taxAmount: number;
-  totalPrice: number;
+  pricePerUnit?: number;
+  subtotal?: number;
+  taxRate?: number;
+  taxAmount?: number;
+  totalPrice?: number;
 
   rawIngredientId: string | null;
   supplyItemId: string | null;
