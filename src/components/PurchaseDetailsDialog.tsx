@@ -3,6 +3,7 @@ import CloseIcon from '@mui/icons-material/Close';
 import { useTranslation } from "react-i18next";
 import type { Purchase } from "../types/purchase";
 import type { MeasurementUnit } from "../types/measurementUnit";
+import useAuth from "../context/useAuth";
 
 type PurchaseDetailsDialogProps = {
   selectedPurchase: Purchase | null;
@@ -45,6 +46,11 @@ function PurchaseDetailsDialog({
   onEdit,
 }: PurchaseDetailsDialogProps) {
   const { t } = useTranslation();
+  const { user } = useAuth();
+
+  const canEditPurchase = user?.permissions.includes("purchases.edit") ?? false;
+  const canViewCost = user?.permissions.includes("purchases.view_cost") ?? false;
+
     return (
         <Dialog 
             open={open}
@@ -85,25 +91,29 @@ function PurchaseDetailsDialog({
                         >
                         <Typography sx={{ mb:1 }}><strong>{t("purchases.details.supplier")}:</strong>  {selectedPurchase.supplier.name}</Typography>
                         <Typography sx={{ mb:1 }}><strong>{t("purchases.details.date")}:</strong> {new Date(selectedPurchase.date).toLocaleDateString()}</Typography>
-                        <Typography sx={{ mb: 1 }}>
-                          <strong>{t("purchases.details.subtotal")}:</strong>{" "}
-                          ₡{selectedPurchase.subtotal.toFixed(2)}
-                        </Typography>
-                                                
-                        <Typography sx={{ mb: 1 }}>
-                          <strong>
-                            {t("purchases.details.tax")}:
-                          </strong>{" "}
-                          ₡{selectedPurchase.taxAmount.toFixed(2)}
-                        </Typography>
-                                                
-                        <Typography>
-                          <strong>{t("purchases.details.totalPrice")}:</strong>{" "}
-                          ₡{selectedPurchase.totalPrice.toFixed(2)}
-                        </Typography>
+                        {canViewCost && (
+                          <>
+                            <Typography sx={{ mb: 1 }}>
+                              <strong>{t("purchases.details.subtotal")}:</strong>{" "}
+                              ₡{selectedPurchase.subtotal?.toFixed(2)}
+                            </Typography>
+
+                            <Typography sx={{ mb: 1 }}>
+                              <strong>
+                                {t("purchases.details.tax")}:
+                              </strong>{" "}
+                              ₡{selectedPurchase.taxAmount?.toFixed(2)}
+                            </Typography>
+
+                            <Typography>
+                              <strong>{t("purchases.details.totalPrice")}:</strong>{" "}
+                              ₡{selectedPurchase.totalPrice?.toFixed(2)}
+                            </Typography>
+                          </>
+                        )}
                     </Box>
 
-                    {onEdit && (
+                    {onEdit && canEditPurchase && (
                       <Button
                         variant="contained"
                         onClick={() => onEdit(selectedPurchase)}
@@ -120,11 +130,15 @@ function PurchaseDetailsDialog({
                             <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'}}>{t("purchases.details.item")}</TableCell>
                             <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>{t("purchases.details.orderUnits")}</TableCell>
                             <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>{t("purchases.details.quantity")}</TableCell>
-                            <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>{t("purchases.details.pricePerUnit")}</TableCell>
-                            <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>{t("purchases.details.subtotal")}</TableCell>
-                            <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>{t("purchases.details.taxRate")}</TableCell>
-                            <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>{t("purchases.details.tax")}</TableCell>
-                            <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>{t("purchases.details.total")}</TableCell>
+                            {canViewCost && (
+                              <>
+                                <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>{t("purchases.details.pricePerUnit")}</TableCell>
+                                <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>{t("purchases.details.subtotal")}</TableCell>
+                                <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>{t("purchases.details.taxRate")}</TableCell>
+                                <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>{t("purchases.details.tax")}</TableCell>
+                                <TableCell align="center" sx={{ color: "white", fontWeight: 700, backgroundColor: 'primary.main', borderBottom: '1px solid #e0e0e0'  }}>{t("purchases.details.total")}</TableCell>
+                              </>
+                            )}
                         </TableRow>
                     </TableHead>
                     <TableBody>
@@ -143,11 +157,15 @@ function PurchaseDetailsDialog({
                                       ? formatUnit(i.supplyItem.canonicalUnit)
                                       : ""}
                                 </TableCell>
-                                <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>₡{i.pricePerUnit.toFixed(2)}</TableCell>
-                                <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>₡{i.subtotal.toFixed(2)}</TableCell>
-                                <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>{i.taxRate}%</TableCell>
-                                <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>₡{i.taxAmount.toFixed(2)}</TableCell>
-                                <TableCell align="center" >₡{i.totalPrice.toFixed(2)}</TableCell>
+                                {canViewCost && (
+                                  <>
+                                    <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>₡{i.pricePerUnit?.toFixed(2)}</TableCell>
+                                    <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>₡{i.subtotal?.toFixed(2)}</TableCell>
+                                    <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>{i.taxRate}%</TableCell>
+                                    <TableCell align="center" sx={{ borderRight: '1px solid #e0e0e0'}}>₡{i.taxAmount?.toFixed(2)}</TableCell>
+                                    <TableCell align="center" >₡{i.totalPrice?.toFixed(2)}</TableCell>
+                                  </>
+                                )}
                             </TableRow>
                             ))
                         }

@@ -192,9 +192,202 @@
       }
     }
   },
+  "ingredients": {
+    "title": "Raw Ingredients",
+    "subtitle": "Track current raw inventory by canonical unit.",
+    "form": {
+      "name": "Name",
+      "quantity": "Quantity",
+      "unit": "Unit",
+      "submit": "Add Ingredient",
+      "adding": "Adding..."
+    },
+    "table": {
+      "name": "Name",
+      "currentQuantity": "Current Quantity",
+      "createdAt": "Created At",
+      "actions": "Actions"
+    },
+    "actions": {
+      "adjust": "Adjust",
+      "transfer": "Transfer"
+    },
+    "loading": "Loading...",
+    "empty": "No ingredients found.",
+    "errors": {
+      "nameRequired": "Name must be a non-empty string.",
+      "quantityInvalid": "Current quantity must be a non-negative number.",
+      "createFailed": "Failed to create raw ingredient.",
+      "loadFailed": "Failed to load ingredient data."
+    },
+    "adjustDialog": {
+      "title": "Adjust Inventory",
+      "ingredient": "Ingredient",
+      "currentInventory": "Current Inventory",
+      "newQuantity": "New Quantity",
+      "newQuantityWithUnit": "New Quantity ({{unit}})",
+      "reason": "Reason",
+      "submit": "Adjust Inventory",
+      "adjusting": "Adjusting...",
+      "errors": {
+        "quantityInvalid": "Quantity must be a non-negative number.",
+        "adjustFailed": "Failed to adjust inventory."
+      }
+    },
+    "history": {
+      "title": "Inventory History",
+      "currentInventory": "Current Inventory",
+      "empty": "No inventory history found.",
+      "table": {
+        "date": "Date",
+        "type": "Type",
+        "change": "Change",
+        "previous": "Previous",
+        "new": "New",
+        "sourceReason": "Source / Reason"
+      },
+      "types": {
+        "PURCHASE": "Purchase",
+        "PRODUCTION": "Production",
+        "ADJUSTMENT": "Adjustment",
+        "TRANSFER_IN": "Transfer In",
+        "TRANSFER_OUT": "Transfer Out"
+      },
+      "sources": {
+        "purchase": "Purchase",
+        "production": "Production",
+        "manualAdjustment": "Manual adjustment",
+        "inventoryTransfer": "Inventory transfer"
+      },
+      "errors": {
+        "loadFailed": "Failed to load inventory history."
+      }
+    },
+    "transferDialog": {
+      "title": "Transfer Inventory",
+      "ingredient": "Ingredient",
+      "echoKitchenInventory": "Echo Kitchen Inventory",
+      "direction": "Direction",
+      "quantity": "Quantity",
+      "submit": "Transfer",
+      "transferring": "Transferring...",
+      "directions": {
+        "echoToDee": "Echo Kitchen → DeePlace",
+        "deeToEcho": "DeePlace → Echo Kitchen"
+      },
+      "errors": {
+        "quantityPositive": "Transfer quantity must be greater than zero.",
+        "exceedsEchoInventory": "Transfer quantity cannot exceed Echo Kitchen inventory.",
+        "transferFailed": "Failed to transfer inventory."
+      }
+    },
+    "transferHistory": {
+      "title": "Transfer History",
+      "empty": "No transfer history found.",
+      "table": {
+        "date": "Date",
+        "direction": "Direction",
+        "ingredient": "Ingredient",
+        "quantity": "Quantity"
+      },
+      "errors": {
+        "loadFailed": "Failed to load transfer history."
+      }
+    }
+  },
+  "locations": {
+    "ECHO_KITCHEN": "Echo Kitchen",
+    "DEE_PLACE": "DeePlace",
+    "ECHO_POKER": "Echo Poker",
+    "ECHO_EVENTS": "Echo Events"
+  },
+  "units": {
+    "KG": "kg",
+    "L": "L",
+    "EACH": "each",
+    "BUNCH": "bunch",
+    "HEAD": "head",
+    "BOX": "box",
+    "CASE": "case",
+    "PACK": "pack",
+    "ROLL": "roll",
+    "BOTTLE": "bottle"
+  },
   "supplyItems": {
     "errors": {
       "loadFailed": "Failed to load supply items."
+    }
+  },
+  "users": {
+    "details": {
+      "title": "User Details",
+      "name": "Name",
+      "username": "Username",
+      "role": "Role",
+      "createdAt": "Created At"
+    },
+    "permissions": {
+      "title": "Permissions",
+      "role": "Role",
+      "custom": "Custom",
+      "save": "Save Permissions",
+      "resetToRoleDefaults": "Reset to Role Defaults",
+      "adminManaged": "Admin permissions are managed by the Admin role and cannot be customized per user.",
+      "dashboard.view": "View dashboard",
+
+      "finished_inventory.view": "View finished inventory",
+
+      "inventory.view": "View inventory",
+      "inventory.adjust": "Adjust inventory quantities",
+      "inventory.transactions.view": "View inventory transaction history",
+      "inventory.transfer.view": "View inventory transfers",
+      "inventory.transfer.create": "Create inventory transfers",
+
+      "orders.view": "View orders",
+      "orders.create": "Create orders",
+      "orders.update_status": "Update order status",
+
+      "permissions.view": "View permissions",
+      "permissions.manage": "Manage role permissions",
+
+      "production.view": "View production batches",
+      "production.create": "Create production batches",
+
+      "purchases.view": "View purchases",
+      "purchases.create": "Create purchases",
+      "purchases.edit": "Edit purchases",
+      "purchases.view_cost": "View purchase pricing and cost information",
+
+      "recipes.view": "View recipes",
+      "recipes.create": "Create recipes",
+      "recipes.view_cost": "View recipe cost information",
+
+      "roles.view": "View roles",
+
+      "sales.view": "View sales",
+      "sales.create": "Create sales",
+      "sales.import": "Import sales from POS",
+      "sales.mapping.manage": "Manage POS product mappings",
+
+      "suppliers.view": "View suppliers",
+      "suppliers.create": "Create suppliers",
+
+      "users.view": "View users",
+      "users.create": "Create users"
+    },
+    "permissionModules": {
+      "dashboard": "Dashboard",
+      "finished_inventory": "Finished Inventory",
+      "inventory": "Inventory",
+      "orders": "Orders",
+      "permissions": "Permissions",
+      "production": "Production",
+      "purchases": "Purchases",
+      "recipes": "Recipes",
+      "roles": "Roles",
+      "sales": "Sales",
+      "suppliers": "Suppliers",
+      "users": "Users"
     }
   },
   "common": {

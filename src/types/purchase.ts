@@ -5,9 +5,9 @@ export type Purchase = {
   id: string;
   date: string;
 
-  subtotal: number;
-  taxAmount: number;
-  totalPrice: number;
+  subtotal?: number;
+  taxAmount?: number;
+  totalPrice?: number;
 
   supplierId: string;
   supplier: Supplier;

@@ -16,10 +16,9 @@ import {
   Typography,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-
+import { useTranslation } from "react-i18next";
 import apiFetch from "../api/apiFetch";
 import type { RawIngredient } from "../types/rawIngredient";
-import type { MeasurementUnit } from "../types/measurementUnit";
 
 type InventoryTransfer = {
   id: string;
@@ -38,45 +37,15 @@ type TransferHistoryDialogProps = {
   onClose: () => void;
 };
 
-const formatLocation = (location: string) => {
-  switch (location) {
-    case "ECHO_KITCHEN":
-      return "Echo Kitchen";
-    case "DEE_PLACE":
-      return "DeePlace";
-    case "ECHO_POKER":
-      return "Echo Poker";
-    case "ECHO_EVENTS":
-      return "Echo Events";
-    default:
-      return location;
-  }
-};
-
-const formatUnit = (unit: MeasurementUnit) => {
-  switch (unit) {
-    case "KG":
-      return "kg";
-    case "L":
-      return "L";
-    case "EACH":
-      return "each";
-    case "BUNCH":
-      return "bunch";
-    case "HEAD":
-      return "head";
-  }
-};
-
 function TransferHistoryDialog({
   open,
   onClose,
 }: TransferHistoryDialogProps) {
-  const [transfers, setTransfers] =
-    useState<InventoryTransfer[]>([]);
+
+  const [transfers, setTransfers] = useState<InventoryTransfer[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] =
-    useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!open) {
@@ -97,7 +66,7 @@ function TransferHistoryDialog({
 
           throw new Error(
             errorData.error ||
-              "Failed to load transfer history."
+              t("ingredients.transferHistory.errors.loadFailed")
           );
         }
 
@@ -109,7 +78,7 @@ function TransferHistoryDialog({
           setError(error.message);
         } else {
           setError(
-            "Failed to load transfer history."
+            t("ingredients.transferHistory.errors.loadFailed")
           );
         }
       } finally {
@@ -135,7 +104,7 @@ function TransferHistoryDialog({
       }}
     >
       <DialogTitle sx={{ fontWeight: 700, pr: 6 }}>
-        Transfer History
+        {t("ingredients.transferHistory.title")}
       </DialogTitle>
 
       <IconButton
@@ -162,7 +131,7 @@ function TransferHistoryDialog({
           <CircularProgress />
         ) : transfers.length === 0 ? (
           <Typography>
-            No transfer history found.
+            {t("ingredients.transferHistory.empty")}
           </Typography>
         ) : (
           <TableContainer
@@ -183,7 +152,7 @@ function TransferHistoryDialog({
                       backgroundColor: "primary.main",
                     }}
                   >
-                    Date
+                    {t("ingredients.transferHistory.table.date")}
                   </TableCell>
 
                   <TableCell
@@ -194,7 +163,7 @@ function TransferHistoryDialog({
                       backgroundColor: "primary.main",
                     }}
                   >
-                    Direction
+                    {t("ingredients.transferHistory.table.direction")}
                   </TableCell>
 
                   <TableCell
@@ -205,7 +174,7 @@ function TransferHistoryDialog({
                       backgroundColor: "primary.main",
                     }}
                   >
-                    Ingredient
+                    {t("ingredients.transferHistory.table.ingredient")}
                   </TableCell>
 
                   <TableCell
@@ -216,7 +185,7 @@ function TransferHistoryDialog({
                       backgroundColor: "primary.main",
                     }}
                   >
-                    Quantity
+                    {t("ingredients.transferHistory.table.quantity")}
                   </TableCell>
                 </TableRow>
               </TableHead>
@@ -232,13 +201,13 @@ function TransferHistoryDialog({
                       </TableCell>
 
                       <TableCell align="center">
-                        {formatLocation(
-                          transfer.sourceLocation
-                        )}{" "}
+                        {t(`locations.${transfer.sourceLocation}`, {
+                          defaultValue: transfer.sourceLocation,
+                        })}{" "}
                         →{" "}
-                        {formatLocation(
-                          transfer.destinationLocation
-                        )}
+                        {t(`locations.${transfer.destinationLocation}`, {
+                          defaultValue: transfer.destinationLocation,
+                        })}
                       </TableCell>
 
                       <TableCell align="center">
@@ -247,9 +216,7 @@ function TransferHistoryDialog({
 
                       <TableCell align="center">
                         {item.quantity.toFixed(2)}{" "}
-                        {formatUnit(
-                          item.rawIngredient.canonicalUnit
-                        )}
+                        {t(`units.${item.rawIngredient.canonicalUnit}`)}
                       </TableCell>
                     </TableRow>
                   ))

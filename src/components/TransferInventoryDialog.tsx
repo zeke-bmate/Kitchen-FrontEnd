@@ -17,9 +17,8 @@ import {
   Typography,
 } from "@mui/material";
 import CloseIcon from "@mui/icons-material/Close";
-
+import { useTranslation } from "react-i18next";
 import type { RawIngredient } from "../types/rawIngredient";
-import type { MeasurementUnit } from "../types/measurementUnit";
 import apiFetch from "../api/apiFetch";
 
 type TransferDirection =
@@ -31,21 +30,6 @@ type TransferInventoryDialogProps = {
   ingredient: RawIngredient | null;
   onClose: () => void;
   onTransferCreated: (ingredient: RawIngredient) => void;
-};
-
-const formatUnit = (unit: MeasurementUnit) => {
-  switch (unit) {
-    case "KG":
-      return "kg";
-    case "L":
-      return "L";
-    case "EACH":
-      return "each";
-    case "BUNCH":
-      return "bunch";
-    case "HEAD":
-      return "head";
-  }
 };
 
 function TransferInventoryDialog({
@@ -65,6 +49,7 @@ function TransferInventoryDialog({
   const [formError, setFormError] =
     useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const { t } = useTranslation();
 
   const handleSubmit = async () => {
     if (!ingredient) {
@@ -81,7 +66,7 @@ function TransferInventoryDialog({
       quantityNumber <= 0
     ) {
       setQuantityError(
-        "Transfer quantity must be greater than zero.",
+        t("ingredients.transferDialog.errors.quantityPositive"),
       );
       return;
     }
@@ -101,7 +86,7 @@ function TransferInventoryDialog({
       quantityNumber > ingredient.currentQuantity
     ) {
       setQuantityError(
-        "Transfer quantity cannot exceed Echo Kitchen inventory.",
+        t("ingredients.transferDialog.errors.exceedsEchoInventory"),
       );
       return;
     }
@@ -136,7 +121,7 @@ function TransferInventoryDialog({
 
         throw new Error(
           errorData.error ||
-            "Failed to transfer inventory.",
+            t("ingredients.transferDialog.errors.transferFailed"),
         );
       }
 
@@ -154,7 +139,7 @@ function TransferInventoryDialog({
       if (error instanceof Error) {
         setFormError(error.message);
       } else {
-        setFormError("Failed to transfer inventory.");
+        t("ingredients.transferDialog.errors.transferFailed");
       }
     } finally {
       setSubmitting(false);
@@ -176,7 +161,7 @@ function TransferInventoryDialog({
       }}
     >
       <DialogTitle sx={{ fontWeight: 700, pr: 6 }}>
-        Transfer Inventory
+        {t("ingredients.transferDialog.title")}
       </DialogTitle>
 
       <IconButton
@@ -195,27 +180,27 @@ function TransferInventoryDialog({
       <DialogContent>
         <Stack spacing={3}>
           <Typography>
-            <strong>Ingredient:</strong>{" "}
+            <strong>{t("ingredients.transferDialog.ingredient")}:</strong>{" "}
             {ingredient?.name}
           </Typography>
 
           {ingredient && (
             <Typography>
-              <strong>Echo Kitchen Inventory:</strong>{" "}
+              <strong>{t("ingredients.transferDialog.echoKitchenInventory")}:</strong>{" "}
               {ingredient.currentQuantity.toFixed(2)}{" "}
-              {formatUnit(ingredient.canonicalUnit)}
+              {t(`units.${ingredient.canonicalUnit}`)}
             </Typography>
           )}
 
           <FormControl fullWidth>
             <InputLabel id="transfer-direction-label">
-              Direction
+              {t("ingredients.transferDialog.direction")}
             </InputLabel>
 
             <Select
               labelId="transfer-direction-label"
               value={direction}
-              label="Direction"
+              label={t("ingredients.transferDialog.direction")}
               onChange={(event) =>
                 setDirection(
                   event.target.value as TransferDirection,
@@ -223,18 +208,18 @@ function TransferInventoryDialog({
               }
             >
               <MenuItem value="ECHO_KITCHEN_TO_DEE_PLACE">
-                Echo Kitchen → DeePlace
+                {t("ingredients.transferDialog.directions.echoToDee")}
               </MenuItem>
 
               <MenuItem value="DEE_PLACE_TO_ECHO_KITCHEN">
-                DeePlace → Echo Kitchen
+                {t("ingredients.transferDialog.directions.deeToEcho")}
               </MenuItem>
             </Select>
           </FormControl>
 
           <TextField
             type="number"
-            label="Quantity"
+            label={t("ingredients.transferDialog.quantity")}
             value={quantity}
             onChange={(event) => {
               setQuantityError(null);
@@ -249,7 +234,7 @@ function TransferInventoryDialog({
               input: {
                 endAdornment: ingredient ? (
                   <InputAdornment position="end">
-                    {formatUnit(ingredient.canonicalUnit)}
+                    {t(`units.${ingredient.canonicalUnit}`)}
                   </InputAdornment>
                 ) : undefined,
               },
@@ -272,8 +257,8 @@ function TransferInventoryDialog({
               disabled={submitting}
             >
               {submitting
-                ? "Transferring..."
-                : "Transfer"}
+                ? t("ingredients.transferDialog.transferring")
+                : t("ingredients.transferDialog.submit")}
             </Button>
           </Box>
         </Stack>

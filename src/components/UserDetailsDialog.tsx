@@ -17,6 +17,7 @@ import { useEffect, useState } from "react";
 import apiFetch from "../api/apiFetch";
 import type { UserPermission } from "../types/userPermission";
 import type { UserPermissionsResponse } from "../types/userPermissionsResponse";
+import { useTranslation } from "react-i18next";
 
 function UserDetailsDialog({
     selectedUser,
@@ -29,6 +30,9 @@ function UserDetailsDialog({
     const [permissionsError, setPermissionsError] = useState<string | null>(null);
     const [savingPermissions, setSavingPermissions] = useState(false);
     const [saveError, setSaveError] = useState<string | null>(null);
+    const { t } = useTranslation();
+
+    const isAdmin = selectedUser?.role.name === "Admin";
 
     const handlePermissionToggle = (permissionId: number) => {
       setPermissions((currentPermissions) =>
@@ -84,13 +88,15 @@ function UserDetailsDialog({
         );
       
         if (!response.ok) {
-          throw new Error("Failed to save permissions.");
+          const data = await response.json();
+
+          throw new Error(data.error || "Failed to save permissions.");
         }
       
         onClose();
       } catch (error) {
         console.error(error);
-        setSaveError("Failed to save permission changes.");
+        setSaveError(error instanceof Error ? error.message : "Failed to save permission changes.");
       } finally {
         setSavingPermissions(false);
       }
@@ -119,7 +125,9 @@ function UserDetailsDialog({
         );
       
         if (!response.ok) {
-          throw new Error("Failed to reset permissions.");
+          const data = await response.json();
+
+          throw new Error(data.error || "Failed to reset permissions.");
         }
       
         const refreshedResponse = await apiFetch(
@@ -136,7 +144,7 @@ function UserDetailsDialog({
         setPermissions(data.permissions);
       } catch (error) {
         console.error(error);
-        setSaveError("Failed to reset permissions.");
+        setSaveError(error instanceof Error ? error.message : "Failed to reset permissions.");
       } finally {
         setSavingPermissions(false);
       }
@@ -199,7 +207,7 @@ function UserDetailsDialog({
               },
             }}
         >
-        <DialogTitle sx={{ fontWeight: 700, pr: 6 }}>User Details</DialogTitle>
+        <DialogTitle sx={{ fontWeight: 700, pr: 6 }}>{t("users.details.title")}</DialogTitle>
             <IconButton
               aria-label="close"
               onClick={onClose}
@@ -222,17 +230,24 @@ function UserDetailsDialog({
                             p: 2,
                           }}
                         >
-                        <Typography sx={{ mb:1 }}><strong>Name:</strong>  {selectedUser.name}</Typography>
-                        <Typography sx={{ mb:1 }}><strong>Username:</strong> {selectedUser.username}</Typography>
-                        <Typography sx={{ mb:1 }}><strong>Role:</strong> {selectedUser.role.name}</Typography>
-                        <Typography ><strong>Created At:</strong> {new Date(selectedUser.createdAt).toLocaleDateString()}</Typography>
+                        <Typography sx={{ mb:1 }}><strong>{t("users.details.name")}:</strong>  {selectedUser.name}</Typography>
+                        <Typography sx={{ mb:1 }}><strong>{t("users.details.username")}:</strong> {selectedUser.username}</Typography>
+                        <Typography sx={{ mb:1 }}><strong>{t("users.details.role")}:</strong> {selectedUser.role.name}</Typography>
+                        <Typography ><strong>{t("users.details.createdAt")}:</strong> {new Date(selectedUser.createdAt).toLocaleDateString()}</Typography>
                     </Box>
                 </Stack>
 
                 <Divider sx={{ my: 2 }} />
 
+                
+                {isAdmin && (
+                  <Alert severity="info" sx={{ mb: 2 }}>
+                    {t("users.permissions.adminManaged")}
+                  </Alert>
+                )}
+
                 <Typography variant="h6" sx={{ fontWeight: 700, mb: 2 }}>
-                  Permissions
+                  {t("users.permissions.title")}
                 </Typography>
                                         
                 {permissionsLoading && (
@@ -260,7 +275,9 @@ function UserDetailsDialog({
                             mb: 1,
                           }}
                         >
-                          {module.replaceAll("_", " ")}
+                          {t(`users.permissionModules.${module}`, {
+                            defaultValue: module.replaceAll("_", " "),
+                          })}
                         </Typography>
                         
                         <Stack spacing={1}>
@@ -276,7 +293,9 @@ function UserDetailsDialog({
                             >
                               <Box>
                                 <Typography>
-                                  {permission.description ?? permission.key}
+                                  {t(`users.permissions.${permission.key}`, {
+                                    defaultValue: permission.description ?? permission.key,
+                                  })}
                                 </Typography>
                               </Box>
                             
@@ -294,8 +313,8 @@ function UserDetailsDialog({
                                   }
                                 >
                                   {permission.override !== null
-                                    ? "Custom"
-                                    : "Role"}
+                                    ? t("users.permissions.custom")
+                                    : t("users.permissions.role")}
                                 </Typography>
                                   
                                 <Switch
@@ -303,6 +322,7 @@ function UserDetailsDialog({
                                   onChange={() =>
                                     handlePermissionToggle(permission.id)
                                   }
+                                  disabled={isAdmin}
                                 />
                               </Stack>
                             </Box>
@@ -329,17 +349,17 @@ function UserDetailsDialog({
                   >
                     <Button
                       onClick={handleResetPermissions}
-                      disabled={savingPermissions}
+                      disabled={savingPermissions || isAdmin}
                       sx={{ mr: 2 }}
                     >
-                      Reset to Role Defaults
+                      {t("users.permissions.resetToRoleDefaults")}
                     </Button>
                     <Button
                       variant="contained"
                       onClick={handleSavePermissions}
-                      disabled={savingPermissions}
+                      disabled={savingPermissions || isAdmin}
                     >
-                      {savingPermissions ? "Saving..." : "Save Permissions"}
+                      {t("users.permissions.save")}
                     </Button>
                   </Box>
                 </Stack>

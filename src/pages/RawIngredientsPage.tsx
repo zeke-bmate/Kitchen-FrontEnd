@@ -18,7 +18,6 @@ import {
   InputLabel,
   MenuItem,
   Select,
-  FormHelperText,
 } from "@mui/material";
 import apiFetch from "../api/apiFetch.ts";
 import AdjustmentInventoryDialog from "../components/AdjustmentInventoryDialog.tsx";
@@ -26,21 +25,8 @@ import InventoryHistoryDialog from "../components/InventoryHistoryDialog.tsx";
 import type { MeasurementUnit } from "../types/measurementUnit";
 import TransferInventoryDialog from "../components/TransferInventoryDialog.tsx";
 import TransferHistoryDialog from "../components/TransferHistoryDialog.tsx";
-
-const formatUnit = (unit: MeasurementUnit) => {
-  switch (unit) {
-    case "KG":
-      return "kg";
-    case "L":
-      return "L";
-    case "EACH":
-      return "each";
-    case "BUNCH":
-      return "bunch";
-    case "HEAD":
-      return "head";
-  }
-};
+import useAuth from "../context/useAuth.ts";
+import { useTranslation } from "react-i18next";
 
 function RawIngredientsPage() {
   const [ingredients, setIngredients] = useState<RawIngredient[]>([]);
@@ -60,6 +46,13 @@ function RawIngredientsPage() {
   const [transferIngredient, setTransferIngredient] = useState<RawIngredient | null>(null);
   const [transferDialogOpen, setTransferDialogOpen] = useState(false);
   const [transferHistoryOpen, setTransferHistoryOpen] = useState(false);
+  const { user } = useAuth();
+  const { t } = useTranslation();
+
+  const canAdjustInventory = user?.permissions.includes("inventory.adjust") ?? false;
+  const canViewInventoryTransactions = user?.permissions.includes("inventory.transactions.view") ?? false;
+  const canViewInventoryTransfers = user?.permissions.includes("inventory.transfer.view") ?? false;
+  const canCreateInventoryTransfer = user?.permissions.includes("inventory.transfer.create") ?? false;
 
   const handleNameChange = (event) => {
     setName(event.target.value);
@@ -105,7 +98,7 @@ function RawIngredientsPage() {
     setQuantityError(null);
     setFormError(null);
     if (!trimmedName) {
-      setNameError("Name must be a non empty string.");
+      setNameError(t("ingredients.errors.nameRequired"));
       return;
     }
     if (
@@ -113,7 +106,7 @@ function RawIngredientsPage() {
       currentQuantityNum < 0
     ) {
       setQuantityError(
-        "Current quantity must be a non-negative number."
+        t("ingredients.errors.quantityInvalid")
       );
       return;
     }
@@ -134,7 +127,7 @@ function RawIngredientsPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to create raw ingredient");
+        throw new Error(errorData.error || t("ingredients.errors.createFailed"));
       }
 
       const createdIngredient = await response.json();
@@ -150,7 +143,7 @@ function RawIngredientsPage() {
       if (error instanceof Error) {
         setFormError(error.message);
       } else {
-        setFormError("Failed to create production batch.");
+        setFormError(t("ingredients.errors.createFailed"));
       }
     } finally {
       setSubmitting(false);
@@ -209,7 +202,7 @@ function RawIngredientsPage() {
           throw new Error(
             errorData.error ||
             errorData.message ||
-            "Request failed.",
+            t("common.errors.requestFailed"),
           );
         }
         const data = await response.json();
@@ -218,7 +211,7 @@ function RawIngredientsPage() {
         if (error instanceof Error) {
           setError(error.message);
         } else {
-          setError("Failed to load Ingredients Data");
+          setError(t("ingredients.errors.loadFailed"));
         }
       } finally {
         setIsLoading(false);
@@ -226,7 +219,7 @@ function RawIngredientsPage() {
     };
 
     fetchIngredientsData();
-  }, []);
+  }, [t]);
 
   if (error) return <p>{error}</p>;
 
@@ -241,69 +234,75 @@ function RawIngredientsPage() {
         }}
       >
         <Typography variant="h4" sx={{ fontWeight: 700 }}>
-          Raw Ingredients
+          {t("ingredients.title")}
         </Typography>
-      
-        <Button
-          variant="outlined"
-          onClick={() => setTransferHistoryOpen(true)}
-        >
-          Transfer History
-        </Button>
+        
+        {canViewInventoryTransfers && (
+          <Button
+            variant="outlined"
+            onClick={() => setTransferHistoryOpen(true)}
+          >
+            {t("ingredients.transferHistory.title")}
+          </Button>
+        )}
       </Stack>
       <Typography variant="body1" sx={{ mb: 3 }}>
-        Track current raw inventory by canonical unit.
+        {t("ingredients.subtitle")}
       </Typography>
-      <form onSubmit={handleSubmit}>
-        <Stack direction="row" spacing={5} sx={{ mb: 3 }}>
-          <TextField
-            error={!!nameError}
-            helperText={nameError ? nameError : ""}
-            label="Name"
-            value={name}
-            onChange={handleNameChange}
-          />
-          <TextField
-            type="number"
-            error={!!quantityError}
-            helperText={quantityError ?? ""}
-            label="Quantity"
-            value={currentQuantity}
-            onChange={handleQuantityChange}
-            slotProps={{
-              htmlInput: {
-                step: "any",
-              },
-            }}
-          />
-          <FormControl sx={{ minWidth: 120 }}>
-            <InputLabel id="unit-select-label">
-              Unit
-            </InputLabel>
+      {canAdjustInventory && (
+        <form onSubmit={handleSubmit}>
+          <Stack direction="row" spacing={5} sx={{ mb: 3 }}>
+            <TextField
+              error={!!nameError}
+              helperText={nameError ? nameError : ""}
+              label={t("ingredients.form.name")}
+              value={name}
+              onChange={handleNameChange}
+            />
+            <TextField
+              type="number"
+              error={!!quantityError}
+              helperText={quantityError ?? ""}
+              label={t("ingredients.form.quantity")}
+              value={currentQuantity}
+              onChange={handleQuantityChange}
+              slotProps={{
+                htmlInput: {
+                  step: "any",
+                },
+              }}
+            />
+            <FormControl sx={{ minWidth: 120 }}>
+              <InputLabel id="unit-select-label">
+                {t("ingredients.form.unit")}
+              </InputLabel>
 
-            <Select
-              labelId="unit-select-label"
-              value={canonicalUnit}
-              label="Unit"
-              onChange={handleUnitChange}
-            >
-              <MenuItem value="KG">kg</MenuItem>
-              <MenuItem value="L">L</MenuItem>
-              <MenuItem value="EACH">each</MenuItem>
-              <MenuItem value="BUNCH">bunch</MenuItem>
-              <MenuItem value="HEAD">head</MenuItem>
-            </Select>
-          </FormControl>
-          <Button type="submit" variant="contained" disabled={submitting}>
-            {submitting ? "Adding..." : "Submit"}
-          </Button>
-        </Stack>
-      </form>
+              <Select
+                labelId="unit-select-label"
+                value={canonicalUnit}
+                label={t("ingredients.form.unit")}
+                onChange={handleUnitChange}
+              >
+                <MenuItem value="KG">{t("units.KG")}</MenuItem>
+                <MenuItem value="L">{t("units.L")}</MenuItem>
+                <MenuItem value="EACH">{t("units.EACH")}</MenuItem>
+                <MenuItem value="BUNCH">{t("units.BUNCH")}</MenuItem>
+                <MenuItem value="HEAD">{t("units.HEAD")}</MenuItem>
+              </Select>
+            </FormControl>
+            <Button type="submit" variant="contained" disabled={submitting}>
+              {submitting
+                ? t("ingredients.form.adding")
+                : t("ingredients.form.submit")}
+            </Button>
+          </Stack>
+        </form>
+      )}
       {formError && <Alert severity="error">{formError}</Alert>}
       {isLoading ? (
-        <Typography>Loading...</Typography>
+        <Typography>{t("ingredients.loading")}</Typography>
       ) : ingredients.length === 0 ? (
-        <Typography>No ingredients found.</Typography>
+        <Typography>{t("ingredients.empty")}</Typography>
       ) : (
         <TableContainer
           component={Paper}
@@ -321,7 +320,7 @@ function RawIngredientsPage() {
                     borderBottom: "1px solid #e0e0e0",
                   }}
                 >
-                  Name
+                  {t("ingredients.table.name")}
                 </TableCell>
                 <TableCell
                   align="center"
@@ -332,7 +331,7 @@ function RawIngredientsPage() {
                     borderBottom: "1px solid #e0e0e0",
                   }}
                 >
-                  Current Quantity
+                  {t("ingredients.table.currentQuantity")}
                 </TableCell>
                 <TableCell
                   align="center"
@@ -343,7 +342,7 @@ function RawIngredientsPage() {
                     borderBottom: "1px solid #e0e0e0",
                   }}
                 >
-                  Created At
+                  {t("ingredients.table.createdAt")}
                 </TableCell>
                 <TableCell
                   align="center"
@@ -354,7 +353,7 @@ function RawIngredientsPage() {
                     borderBottom: "1px solid #e0e0e0",
                   }}
                 >
-                  Actions
+                  {t("ingredients.table.actions")}
                 </TableCell>
               </TableRow>
             </TableHead>
@@ -363,9 +362,15 @@ function RawIngredientsPage() {
                 <TableRow 
                   key={i.id}
                   hover
-                  onClick={() => handleOpenHistoryDialog(i)}
+                  onClick={
+                    canViewInventoryTransactions
+                      ? () => handleOpenHistoryDialog(i)
+                      : undefined
+                  }
                   sx={{
-                    cursor: "pointer",
+                    cursor: canViewInventoryTransactions
+                      ? "pointer"
+                      : "default",
                   }}
                 >
                   <TableCell
@@ -378,7 +383,7 @@ function RawIngredientsPage() {
                     align="center"
                     sx={{ borderRight: "1px solid #e0e0e0" }}
                   >
-                    {i.currentQuantity.toFixed(2)} {formatUnit(i.canonicalUnit)}
+                    {i.currentQuantity.toFixed(2)} {t(`units.${i.canonicalUnit}`)}
                   </TableCell>
                   <TableCell 
                     align="center"
@@ -392,25 +397,28 @@ function RawIngredientsPage() {
                       spacing={1}
                       sx={{ justifyContent: "center" }}
                     >
-                      <Button
-                        variant="outlined"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          handleOpenAdjustDialog(i);
-                        }}
-                      >
-                        Adjust
-                      </Button>
-                      
-                      <Button
-                        variant="outlined"
-                        onClick={(event) => {
-                          event.stopPropagation();
-                          handleOpenTransferDialog(i);
-                        }}
-                      >
-                        Transfer
-                      </Button>
+                      {canAdjustInventory && (
+                        <Button
+                          variant="outlined"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleOpenAdjustDialog(i);
+                          }}
+                        >
+                          {t("ingredients.actions.adjust")}
+                        </Button>
+                      )}
+                      {canCreateInventoryTransfer && (
+                        <Button
+                          variant="outlined"
+                          onClick={(event) => {
+                            event.stopPropagation();
+                            handleOpenTransferDialog(i);
+                          }}
+                        >
+                          {t("ingredients.actions.transfer")}
+                        </Button>
+                      )}
                     </Stack>
                   </TableCell>
                 </TableRow>

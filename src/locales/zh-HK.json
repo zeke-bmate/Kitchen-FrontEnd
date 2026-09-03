@@ -189,9 +189,202 @@
       }
     }
   },
+  "ingredients": {
+    "title": "原料",
+    "subtitle": "依標準單位追蹤目前的原料庫存。",
+    "form": {
+      "name": "名稱",
+      "quantity": "數量",
+      "unit": "單位",
+      "submit": "新增原料",
+      "adding": "新增中..."
+    },
+    "table": {
+      "name": "名稱",
+      "currentQuantity": "目前數量",
+      "createdAt": "建立日期",
+      "actions": "操作"
+    },
+    "actions": {
+      "adjust": "調整",
+      "transfer": "調撥"
+    },
+    "loading": "載入中...",
+    "empty": "找不到原料。",
+    "errors": {
+      "nameRequired": "名稱不可為空白。",
+      "quantityInvalid": "目前數量必須為非負數。",
+      "createFailed": "無法新增原料。",
+      "loadFailed": "無法載入原料資料。"
+    },
+    "adjustDialog": {
+      "title": "調整庫存",
+      "ingredient": "原料",
+      "currentInventory": "目前庫存",
+      "newQuantity": "新數量",
+      "newQuantityWithUnit": "新數量（{{unit}}）",
+      "reason": "原因",
+      "submit": "調整庫存",
+      "adjusting": "調整中...",
+      "errors": {
+        "quantityInvalid": "數量必須為非負數。",
+        "adjustFailed": "無法調整庫存。"
+      }
+    },
+    "history": {
+      "title": "庫存記錄",
+      "currentInventory": "目前庫存",
+      "empty": "找不到庫存記錄。",
+      "table": {
+        "date": "日期",
+        "type": "類型",
+        "change": "變動",
+        "previous": "原數量",
+        "new": "新數量",
+        "sourceReason": "來源 / 原因"
+      },
+      "types": {
+        "PURCHASE": "採購",
+        "PRODUCTION": "生產",
+        "ADJUSTMENT": "調整",
+        "TRANSFER_IN": "調撥入庫",
+        "TRANSFER_OUT": "調撥出庫"
+      },
+      "sources": {
+        "purchase": "採購",
+        "production": "生產",
+        "manualAdjustment": "手動調整",
+        "inventoryTransfer": "庫存調撥"
+      },
+      "errors": {
+        "loadFailed": "無法載入庫存記錄。"
+      }
+    },
+    "transferDialog": {
+      "title": "調撥庫存",
+      "ingredient": "原料",
+      "echoKitchenInventory": "Echo Kitchen 庫存",
+      "direction": "調撥方向",
+      "quantity": "數量",
+      "submit": "調撥",
+      "transferring": "調撥中...",
+      "directions": {
+        "echoToDee": "Echo Kitchen → DeePlace",
+        "deeToEcho": "DeePlace → Echo Kitchen"
+      },
+      "errors": {
+        "quantityPositive": "調撥數量必須大於零。",
+        "exceedsEchoInventory": "調撥數量不可超過 Echo Kitchen 的庫存。",
+        "transferFailed": "無法調撥庫存。"
+      }
+    },
+    "transferHistory": {
+      "title": "調撥記錄",
+      "empty": "找不到調撥記錄。",
+      "table": {
+        "date": "日期",
+        "direction": "調撥方向",
+        "ingredient": "原料",
+        "quantity": "數量"
+      },
+      "errors": {
+        "loadFailed": "無法載入調撥記錄。"
+      }
+    }
+  },
+  "locations": {
+    "ECHO_KITCHEN": "Echo Kitchen",
+    "DEE_PLACE": "DeePlace",
+    "ECHO_POKER": "Echo Poker",
+    "ECHO_EVENTS": "Echo Events"
+  },
+  "units": {
+    "KG": "公斤",
+    "L": "公升",
+    "EACH": "個",
+    "BUNCH": "把",
+    "HEAD": "顆",
+    "BOX": "箱",
+    "CASE": "箱",
+    "PACK": "包",
+    "ROLL": "卷",
+    "BOTTLE": "瓶"
+  },
   "supplyItems": {
     "errors": {
       "loadFailed": "無法載入用品。"
+    }
+  },
+  "users": {
+    "details": {
+      "title": "使用者詳情",
+      "name": "姓名",
+      "username": "使用者名稱",
+      "role": "角色",
+      "createdAt": "建立日期"
+    },
+    "permissions": {
+      "title": "權限",
+      "role": "角色",
+      "custom": "自訂",
+      "save": "儲存權限",
+      "resetToRoleDefaults": "重設為角色預設權限",
+      "adminManaged": "管理員權限由管理員角色統一管理，無法針對個別使用者自訂。",
+        "dashboard.view": "查看首頁",
+
+        "finished_inventory.view": "查看成品庫存",
+
+        "inventory.view": "查看庫存",
+        "inventory.adjust": "調整庫存數量",
+        "inventory.transactions.view": "查看庫存交易記錄",
+        "inventory.transfer.view": "查看庫存調撥",
+        "inventory.transfer.create": "新增庫存調撥",
+
+        "orders.view": "查看訂單",
+        "orders.create": "新增訂單",
+        "orders.update_status": "更新訂單狀態",
+
+        "permissions.view": "查看權限",
+        "permissions.manage": "管理角色權限",
+
+        "production.view": "查看生產批次",
+        "production.create": "新增生產批次",
+
+        "purchases.view": "查看採購",
+        "purchases.create": "新增採購",
+        "purchases.edit": "編輯採購",
+        "purchases.view_cost": "查看採購價格及成本資訊",
+
+        "recipes.view": "查看食譜",
+        "recipes.create": "新增食譜",
+        "recipes.view_cost": "查看食譜成本資訊",
+
+        "roles.view": "查看角色",
+
+        "sales.view": "查看銷售",
+        "sales.create": "新增銷售",
+        "sales.import": "從 POS 匯入銷售資料",
+        "sales.mapping.manage": "管理 POS 產品對應",
+
+        "suppliers.view": "查看供應商",
+        "suppliers.create": "新增供應商",
+
+        "users.view": "查看使用者",
+        "users.create": "新增使用者"
+    },
+    "permissionModules": {
+      "dashboard": "首頁",
+      "finished_inventory": "成品庫存",
+      "inventory": "庫存",
+      "orders": "訂單",
+      "permissions": "權限",
+      "production": "生產",
+      "purchases": "採購",
+      "recipes": "食譜",
+      "roles": "角色",
+      "sales": "銷售",
+      "suppliers": "供應商",
+      "users": "使用者"
     }
   },
   "common": {
