@@ -16,6 +16,7 @@ import RecipeDetailsDialog from "../components/RecipeDetailsDialog";
 import CreateRecipeDialog from "../components/CreateRecipeDialog";
 import apiFetch from "../api/apiFetch";
 import { useTranslation } from "react-i18next";
+import useAuth from "../context/useAuth";
 
 function RecipesPage() {
   const { t } = useTranslation();
@@ -25,6 +26,9 @@ function RecipesPage() {
   const [selectedRecipe, setSelectedRecipe] = useState<Recipe | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const { user } = useAuth();
+
+  const canCreateRecipe = user?.permissions.includes("recipes.create") ?? false;
 
   const handleRecipeClick = (recipe: Recipe) => {
     setSelectedRecipe(recipe);
@@ -81,13 +85,15 @@ function RecipesPage() {
       <Typography variant="body1" sx={{ mb: 3 }}>
         {t("recipes.subtitle")}
       </Typography>
-      <Button
-        variant="contained"
-        onClick={handleCreateRecipeClick}
-        sx={{ mb: 3 }}
-      >
-        {t("recipes.createRecipe")}
-      </Button>
+      {canCreateRecipe && (
+        <Button
+          variant="contained"
+          onClick={handleCreateRecipeClick}
+          sx={{ mb: 3 }}
+        >
+          {t("recipes.createRecipe")}
+        </Button>
+      )}
       {isLoading ? (
         <Typography>{t("recipes.loading")}</Typography>
       ) : recipes.length === 0 ? (
@@ -187,7 +193,7 @@ function RecipesPage() {
           onClose={handleClose}
         />
       )}
-      {createDialogOpen && (
+      {canCreateRecipe && createDialogOpen && (
         <CreateRecipeDialog
           open={createDialogOpen}
           onClose={handleCreateRecipeClose}

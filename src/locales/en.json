@@ -390,6 +390,45 @@
       "users": "Users"
     }
   },
+  "production": {
+    "title": "Production Batches",
+    "subtitle": "Track production batches by recipe.",
+    "form": {
+      "order": "Order",
+      "recipe": "Recipe",
+      "manualProduction": "Manual Production",
+      "orderOption": "{{recipe}} • {{quantity}} servings • {{status}}",
+      "recipeFromOrder": "Recipe is determined by the selected order.",
+      "selectRecipe": "Select a recipe for manual production.",
+      "batchesProduced": "Batches Produced",
+      "batches": "batches",
+      "servingsPerBatch": "Each batch produces {{servings}} servings.",
+      "selectRecipeForServings": "Select a recipe to see servings per batch.",
+      "submit": "Submit",
+      "adding": "Adding..."
+    },
+    "table": {
+      "recipe": "Recipe",
+      "order": "Order",
+      "batchesProduced": "Batches Produced",
+      "createdAt": "Created At",
+      "orderDetails": "{{quantity}} servings • {{status}}"
+    },
+    "loading": "Loading...",
+    "empty": "No production batches found.",
+    "errors": {
+      "recipeRequired": "Recipe is required.",
+      "quantityInvalid": "Batches produced must be a positive number greater than zero.",
+      "createFailed": "Failed to create production batch.",
+      "loadFailed": "Failed to load production data."
+    }
+  },
+  "orderStatuses": {
+    "PENDING": "Pending",
+    "IN_PROGRESS": "In Progress",
+    "FINISHED": "Finished",
+    "CANCELLED": "Cancelled"
+  },
   "common": {
     "errors": {
       "networkError": "Unable to connect to the server."

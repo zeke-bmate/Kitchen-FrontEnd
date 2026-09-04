@@ -387,6 +387,45 @@
       "users": "Usuarios"
     }
   },
+  "production": {
+    "title": "Lotes de producción",
+    "subtitle": "Registra los lotes de producción por receta.",
+    "form": {
+      "order": "Pedido",
+      "recipe": "Receta",
+      "manualProduction": "Producción manual",
+      "orderOption": "{{recipe}} • {{quantity}} porciones • {{status}}",
+      "recipeFromOrder": "La receta está determinada por el pedido seleccionado.",
+      "selectRecipe": "Selecciona una receta para la producción manual.",
+      "batchesProduced": "Lotes producidos",
+      "batches": "lotes",
+      "servingsPerBatch": "Cada lote produce {{servings}} porciones.",
+      "selectRecipeForServings": "Selecciona una receta para ver las porciones por lote.",
+      "submit": "Enviar",
+      "adding": "Agregando..."
+    },
+    "table": {
+      "recipe": "Receta",
+      "order": "Pedido",
+      "batchesProduced": "Lotes producidos",
+      "createdAt": "Fecha de creación",
+      "orderDetails": "{{quantity}} porciones • {{status}}"
+    },
+    "loading": "Cargando...",
+    "empty": "No se encontraron lotes de producción.",
+    "errors": {
+      "recipeRequired": "Se requiere una receta.",
+      "quantityInvalid": "La cantidad de lotes producidos debe ser mayor que cero.",
+      "createFailed": "No se pudo crear el lote de producción.",
+      "loadFailed": "No se pudieron cargar los datos de producción."
+    }
+  },
+  "orderStatuses": {
+    "PENDING": "Pendiente",
+    "IN_PROGRESS": "En progreso",
+    "FINISHED": "Finalizado",
+    "CANCELLED": "Cancelado"
+  },
   "common": {
     "errors": {
       "networkError": "No se pudo conectar con el servidor."
