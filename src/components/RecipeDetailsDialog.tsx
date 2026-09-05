@@ -1,25 +1,11 @@
 import { Dialog, DialogTitle, DialogContent, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, IconButton, Box, Stack, Alert, CircularProgress } from "@mui/material";
 import CloseIcon from '@mui/icons-material/Close';
-import type { MeasurementUnit } from "../types/measurementUnit";
 import { useEffect, useState } from "react";
 import apiFetch from "../api/apiFetch";
 import type { RecipeCost } from "../types/recipeCost";
 import { useTranslation } from "react-i18next";
-
-const formatUnit = (unit: MeasurementUnit) => {
-  switch (unit) {
-    case "KG":
-      return "kg";
-    case "L":
-      return "L";
-    case "EACH":
-      return "each";
-    case "BUNCH":
-      return "bunch";
-    case "HEAD":
-      return "head";
-  }
-};
+import useAuth from "../context/useAuth";
+import type { RecipeIngredient } from "../types/recipeIngredient";
 
 function RecipeDetailsDialog({
     selectedRecipe,
@@ -30,9 +16,15 @@ function RecipeDetailsDialog({
   const [recipeCost, setRecipeCost] = useState<RecipeCost | null>(null);
   const [isCostLoading, setIsCostLoading] = useState(false);
   const [costError, setCostError] = useState<string | null>(null);
+  const { user } = useAuth();
+
+  const canViewRecipeCost = user?.permissions.includes("recipes.view_cost") ?? false;
 
   useEffect(() => {
-  if (!open || !selectedRecipe) {
+  if (!open || !selectedRecipe || !canViewRecipeCost) {
+    setRecipeCost(null);
+    setCostError(null);
+    setIsCostLoading(false);
     return;
   }
 
@@ -70,7 +62,7 @@ function RecipeDetailsDialog({
     };
   
     fetchRecipeCost();
-  }, [open, selectedRecipe, t]);
+  }, [open, selectedRecipe, canViewRecipeCost, t]);
 
     return (
         <Dialog 
@@ -114,43 +106,46 @@ function RecipeDetailsDialog({
                           <strong>{t("recipes.details.servings")}:</strong>{" "}
                           {selectedRecipe.servings}
                         </Typography>
-
-                        {isCostLoading ? (
-                          <CircularProgress size={22} />
-                        ) : recipeCost ? (
+                        {canViewRecipeCost && (
                           <>
-                            <Typography sx={{ mb: 1 }}>
-                              <strong>{t("recipes.details.totalCost")}:</strong>{" "}
-                              {recipeCost.totalCost === null
-                                ? "—"
-                                : `₡${recipeCost.totalCost.toFixed(2)}`}
-                            </Typography>
-                              
-                            <Typography>
-                              <strong>{t("recipes.details.costPerServing")}:</strong>{" "}
-                              {recipeCost.costPerServing === null
-                                ? "—"
-                                : `₡${recipeCost.costPerServing.toFixed(2)}`}
-                            </Typography>
+                            {isCostLoading ? (
+                              <CircularProgress size={22} />
+                            ) : recipeCost ? (
+                              <>
+                                <Typography sx={{ mb: 1 }}>
+                                  <strong>{t("recipes.details.totalCost")}:</strong>{" "}
+                                  {recipeCost.totalCost === null
+                                    ? "—"
+                                    : `₡${recipeCost.totalCost.toFixed(2)}`}
+                                </Typography>
+                                  
+                                <Typography>
+                                  <strong>{t("recipes.details.costPerServing")}:</strong>{" "}
+                                  {recipeCost.costPerServing === null
+                                    ? "—"
+                                    : `₡${recipeCost.costPerServing.toFixed(2)}`}
+                                </Typography>
+                              </>
+                            ) : null}
                           </>
-                        ) : null}
+                        )}
                     </Box>
                     
                 </Stack>
 
-                {recipeCost?.hasMissingCostData && (
+                {canViewRecipeCost && recipeCost?.hasMissingCostData && (
                   <Alert severity="warning" sx={{ mb: 2 }}>
                     {t("recipes.details.missingCostWarning")}
                   </Alert>
                 )}
 
-                {costError && (
+                {canViewRecipeCost && costError && (
                   <Alert severity="error" sx={{ mb: 2 }}>
                     {costError}
                   </Alert>
                 )}
 
-                {recipeCost && (
+                {selectedRecipe && (
                   <TableContainer
                     component={Paper}
                     sx={{
@@ -185,100 +180,92 @@ function RecipeDetailsDialog({
                             {t("recipes.details.quantity")}
                           </TableCell>
                           
-                          <TableCell
-                            align="center"
-                            sx={{
-                              color: "white",
-                              fontWeight: 700,
-                              backgroundColor: "primary.main",
-                              borderBottom: "1px solid #e0e0e0",
-                            }}
-                          >
-                            {t("recipes.details.pricePerUnit")}
-                          </TableCell>
-                          
-                          <TableCell
-                            align="center"
-                            sx={{
-                              color: "white",
-                              fontWeight: 700,
-                              backgroundColor: "primary.main",
-                              borderBottom: "1px solid #e0e0e0",
-                            }}
-                          >
-                            {t("recipes.details.cost")}
-                          </TableCell>
-                          
-                          <TableCell
-                            align="center"
-                            sx={{
-                              color: "white",
-                              fontWeight: 700,
-                              backgroundColor: "primary.main",
-                              borderBottom: "1px solid #e0e0e0",
-                            }}
-                          >
-                            {t("recipes.details.latestPurchase")}
-                          </TableCell>
+                          {canViewRecipeCost && (
+                            <>
+                              <TableCell
+                                align="center"
+                                sx={{
+                                  color: "white",
+                                  fontWeight: 700,
+                                  backgroundColor: "primary.main",
+                                  borderBottom: "1px solid #e0e0e0",
+                                }}
+                              >
+                                {t("recipes.details.pricePerUnit")}
+                              </TableCell>
+                              
+                              <TableCell
+                                align="center"
+                                sx={{
+                                  color: "white",
+                                  fontWeight: 700,
+                                  backgroundColor: "primary.main",
+                                  borderBottom: "1px solid #e0e0e0",
+                                }}
+                              >
+                                {t("recipes.details.cost")}
+                              </TableCell>
+                              
+                              <TableCell
+                                align="center"
+                                sx={{
+                                  color: "white",
+                                  fontWeight: 700,
+                                  backgroundColor: "primary.main",
+                                  borderBottom: "1px solid #e0e0e0",
+                                }}
+                              >
+                                {t("recipes.details.latestPurchase")}
+                              </TableCell>
+                            </>
+                          )}
                         </TableRow>
                       </TableHead>
                           
                       <TableBody>
-                        {recipeCost.ingredients.map((ingredient) => (
-                          <TableRow
-                            key={ingredient.rawIngredientId}
-                            hover
-                          >
-                            <TableCell
-                              align="center"
-                              sx={{
-                                borderRight: "1px solid #e0e0e0",
-                              }}
-                            >
-                              {ingredient.name}
-                            </TableCell>
-                            
-                            <TableCell
-                              align="center"
-                              sx={{
-                                borderRight: "1px solid #e0e0e0",
-                              }}
-                            >
-                              {ingredient.quantity}{" "}
-                              {formatUnit(ingredient.canonicalUnit)}
-                            </TableCell>
-                            
-                            <TableCell
-                              align="center"
-                              sx={{
-                                borderRight: "1px solid #e0e0e0",
-                              }}
-                            >
-                              {ingredient.pricePerUnit === null
-                                ? "—"
-                                : `₡${ingredient.pricePerUnit.toFixed(2)}`}
-                            </TableCell>
-                              
-                            <TableCell
-                              align="center"
-                              sx={{
-                                borderRight: "1px solid #e0e0e0",
-                              }}
-                            >
-                              {ingredient.cost === null
-                                ? "—"
-                                : `₡${ingredient.cost.toFixed(2)}`}
-                            </TableCell>
-                              
-                            <TableCell align="center">
-                              {ingredient.latestPurchaseDate
-                                ? new Date(
-                                    ingredient.latestPurchaseDate
-                                  ).toLocaleDateString()
-                                : "—"}
-                            </TableCell>
-                          </TableRow>
-                        ))}
+                        {selectedRecipe.ingredients.map((ingredient: RecipeIngredient) => {
+                          const costIngredient = recipeCost?.ingredients.find(
+                            (costItem) =>
+                              costItem.rawIngredientId === ingredient.rawIngredientId
+                          );
+                        
+                          return (
+                            <TableRow key={ingredient.id}>
+                              <TableCell align="center">
+                                {ingredient.rawIngredient.name}
+                              </TableCell>
+                          
+                              <TableCell align="center">
+                                {ingredient.quantity.toFixed(2)}{" "}
+                                {t(`units.${ingredient.rawIngredient.canonicalUnit}`)}
+                              </TableCell>
+                          
+                              {canViewRecipeCost && (
+                                <>
+                                  <TableCell align="center">
+                                    {costIngredient?.pricePerUnit == null
+                                      ? "—"
+                                      : `₡${costIngredient.pricePerUnit.toFixed(2)}`}
+                                  </TableCell>
+                                    
+                                  <TableCell align="center">
+                                    {costIngredient?.cost == null
+                                      ? "—"
+                                      : `₡${costIngredient.cost.toFixed(2)}`}
+                                  </TableCell>
+                                    
+                                  <TableCell align="center">
+                                    {costIngredient?.latestPurchaseDate
+                                      ? new Date(
+                                          costIngredient.latestPurchaseDate
+                                        ).toLocaleDateString()
+                                      : "—"}
+                                  </TableCell>
+                                </>
+                              )}
+                            </TableRow>
+                          );
+                        })}
                       </TableBody>
                     </Table>
                   </TableContainer>

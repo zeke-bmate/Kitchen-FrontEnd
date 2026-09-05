@@ -24,14 +24,15 @@ import {
 } from "@mui/material";
 import apiFetch from "../api/apiFetch";
 import type { Order } from "../types/orders";
-import { se } from "date-fns/locale";
+import useAuth from "../context/useAuth";
+import { useTranslation } from "react-i18next";
 
 function ProductionBatchesPage() {
   const [recipes, setRecipes] = useState<Recipe[]>([]);
   const [productionBatches, setProductionBatches] = useState<ProductionBatch[]>(
     [],
   );
-  const [isRecipeLoading, setIsRecipeLoading] = useState(true);
+
   const [isProductionLoading, setIsProductionLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedRecipeId, setSelectedRecipeId] = useState<string>("");
@@ -41,12 +42,13 @@ function ProductionBatchesPage() {
   const [recipeError, setRecipeError] = useState<string | null>(null);
   const [quantityError, setQuantityError] = useState<string | null>(null);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [isOrderLoading, setIsOrderLoading] = useState(true);
   const [selectedOrderId, setSelectedOrderId] = useState("");
-  const [orderError, setOrderError] = useState<string | null>(null);
+  const { user } = useAuth();
+  const { t } = useTranslation();
+
+  const canCreateProduction = user?.permissions.includes("production.create") ?? false;
 
   const handleOrderChange = (event) => {
-    setOrderError(null);
     const orderId = event.target.value;
     setSelectedOrderId(orderId);
 
@@ -87,12 +89,12 @@ function ProductionBatchesPage() {
     setQuantityError(null);
     setFormError(null);
     if (!trimmedRecipeId) {
-      setRecipeError("Recipe ID must be a non empty string.");
+      setRecipeError(t("production.errors.recipeRequired"));
       return;
     }
     if (Number.isNaN(quantityProducedNum) || quantityProducedNum <= 0) {
       setQuantityError(
-        "Quantity Produced must be a positive number greater than zero.",
+        t("production.errors.quantityInvalid")
       );
       return;
     }
@@ -113,7 +115,7 @@ function ProductionBatchesPage() {
 
       if (!response.ok) {
         const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to create production batch");
+        throw new Error(errorData.error || t("production.errors.createFailed"));
       }
       const createdProductionBatch = await response.json();
 
@@ -128,7 +130,7 @@ function ProductionBatchesPage() {
       if (error instanceof Error) {
         setFormError(error.message);
       } else {
-        setFormError("Failed to create production batch.");
+        setFormError(t("production.errors.createFailed"));
       }
     } finally {
       setSubmitting(false);
@@ -136,42 +138,40 @@ function ProductionBatchesPage() {
   };
 
   useEffect(() => {
-    const fetchRecipesData = async () => {
-      try {
-        const response = await apiFetch("/api/recipes");
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
-        }
-        const data = await response.json();
-        setRecipes(data);
-      } catch (error) {
-        if (error instanceof Error) {
-          setError(error.message);
-        } else {
-          setError("Failed to load Recipe Data");
-        }
-      } finally {
-        setIsRecipeLoading(false);
-      }
-    };
-
-    fetchRecipesData();
-  }, []);
-
-  useEffect(() => {
     const fetchProductionData = async () => {
       try {
-        const response = await apiFetch("/api/production-batches");
-        if (!response.ok) {
-          throw new Error("Network response was not ok");
+        const productionResponse = await apiFetch(
+          "/api/production-batches"
+        );
+
+        if (!productionResponse.ok) {
+          throw new Error(t("production.errors.loadFailed"));
         }
-        const data = await response.json();
-        setProductionBatches(data);
+
+        const productionData = await productionResponse.json();
+        setProductionBatches(productionData);
+
+        if (canCreateProduction) {
+          const [recipesResponse, ordersResponse] = await Promise.all([
+            apiFetch("/api/recipes"),
+            apiFetch("/api/orders"),
+          ]);
+
+          if (!recipesResponse.ok || !ordersResponse.ok) {
+            throw new Error(t("production.errors.loadFailed"));
+          }
+
+          const [recipesData, ordersData] = await Promise.all([
+            recipesResponse.json(),
+            ordersResponse.json(),
+          ]);
+
+          setRecipes(recipesData);
+          setOrders(ordersData);
+        }
       } catch (error) {
         if (error instanceof Error) {
           setError(error.message);
-        } else {
-          setError("Failed to load Production Batch Data");
         }
       } finally {
         setIsProductionLoading(false);
@@ -179,122 +179,105 @@ function ProductionBatchesPage() {
     };
 
     fetchProductionData();
-  }, []);
-
-  useEffect(() => {
-    const fetchOrdersData = async () => {
-      try {
-        const response = await apiFetch("/api/orders");
-        if (!response.ok) {
-          throw new Error("Network reponse was not ok");
-        }
-
-        const data = await response.json();
-
-        const activeOrders = data.filter(
-          (order: Order) => order.status !== "FINISHED"
-        );
-        setOrders(activeOrders);
-      } catch (error) {
-        if (error instanceof Error) {
-          setError(error.message);
-        } else {
-          setError("Failed to load orders data");
-        }
-      } finally {
-        setIsOrderLoading(false);
-      }
-    };
-
-    fetchOrdersData();
-  }, []);
+  }, [canCreateProduction, t]);
 
   if (error) return <p>{error}</p>;
 
   return (
     <Box sx={{ padding: 4, maxWidth: 1000, mx: "auto" }}>
       <Typography variant="h4" sx={{ fontWeight: 700, mb: 3 }}>
-        Production Batches
+         {t("production.title")}
       </Typography>
       <Typography variant="body1" sx={{ mb: 3 }}>
-        Track production batches by Recipe.
+        {t("production.subtitle")}
       </Typography>
-      <form onSubmit={handleSubmit}>
-        <Stack direction="row" spacing={5} sx={{ mb: 3 }}>
-          <FormControl error={!!orderError} sx={{ minWidth: 200 }}>
-            <InputLabel id="order-select-label">Order</InputLabel>
-            <Select
-              value={selectedOrderId}
-              onChange={handleOrderChange}
-              label="Order"
-              labelId="order-select-label"
-              autoWidth
-            >
-              <MenuItem value="">
-                <em>Manual Production</em>
-              </MenuItem>
-              {orders.map((o) => (
-                <MenuItem key={o.id} value={o.id}>
-                  {o.recipe.name} • {o.quantity} servings • {o.status}
-                </MenuItem>
-              ))}
-            </Select>
-            {!!orderError && <FormHelperText>{orderError}</FormHelperText>}
-          </FormControl>
-          <FormControl error={!!recipeError} sx={{ minWidth: 200 }}>
-            <InputLabel id="recipe-select-label">Recipe</InputLabel>
-            <Select
-              value={selectedRecipeId}
-              onChange={handleRecipeChange}
-              label="Recipe"
-              labelId="recipe-select-label"
-              autoWidth
-              disabled={!!selectedOrderId}
-            >
-              {recipes.map((r) => (
-                <MenuItem key={r.id} value={r.id}>
-                  {r.name}
-                </MenuItem>
-              ))}
-            </Select>
-            {!!recipeError && <FormHelperText>{recipeError}</FormHelperText>}
-            <FormHelperText>
-              {selectedOrderId
-                ? "Recipe is determined by the selected order."
-                : "Select a recipe for manual production."}
-            </FormHelperText>
-          </FormControl>
-          <TextField
-            type="number"
-            error={!!quantityError}
-            label="Batches Produced"
-            value={quantityProduced}
-            slotProps={{
-              input: {
-                endAdornment: (
-                  <InputAdornment position="end">batches</InputAdornment>
-                ),
-              },
-            }}
-            onChange={handleQuantityChange}
-            helperText={
-              quantityError
-                ? quantityError
-                : selectedRecipe
-                  ? `Each batch produces ${selectedRecipe.servings} servings.`
-                  : "Select a recipe to see servings per batch."
-            }
-          />
-          <Button type="submit" variant="contained" disabled={submitting}>
-            {submitting ? "Adding..." : "Submit"}
-          </Button>
-        </Stack>
-      </form>
-      {formError && <Alert severity="error">{formError}</Alert>}
+      {canCreateProduction && (
+        <>
+          <form onSubmit={handleSubmit}>
+            <Stack direction="row" spacing={5} sx={{ mb: 3 }}>
+              <FormControl sx={{ minWidth: 200 }}>
+                <InputLabel id="order-select-label">{t("production.form.order")}</InputLabel>
+                <Select
+                  value={selectedOrderId}
+                  onChange={handleOrderChange}
+                  label={t("production.form.order")}
+                  labelId="order-select-label"
+                  autoWidth
+                >
+                  <MenuItem value="">
+                    <em>{t("production.form.manualProduction")}</em>
+                  </MenuItem>
+                  {orders.map((o) => (
+                    <MenuItem key={o.id} value={o.id}>
+                      {t("production.form.orderOption", {
+                        recipe: o.recipe.name,
+                        quantity: o.quantity,
+                        status: t(`orderStatuses.${o.status}`),
+                      })}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+              <FormControl error={!!recipeError} sx={{ minWidth: 200 }}>
+                <InputLabel id="recipe-select-label">{t("production.form.recipe")}</InputLabel>
+                <Select
+                  value={selectedRecipeId}
+                  onChange={handleRecipeChange}
+                  label={t("production.form.recipe")}
+                  labelId="recipe-select-label"
+                  autoWidth
+                  disabled={!!selectedOrderId}
+                >
+                  {recipes.map((r) => (
+                    <MenuItem key={r.id} value={r.id}>
+                      {r.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+                {!!recipeError && <FormHelperText>{recipeError}</FormHelperText>}
+                <FormHelperText>
+                  {selectedOrderId
+                    ? t("production.form.recipeFromOrder")
+                    : t("production.form.selectRecipe")}
+                </FormHelperText>
+              </FormControl>
+              <TextField
+                type="number"
+                error={!!quantityError}
+                label={t("production.form.batchesProduced")}
+                value={quantityProduced}
+                slotProps={{
+                  input: {
+                    endAdornment: (
+                      <InputAdornment position="end">{t("production.form.batches")}</InputAdornment>
+                    ),
+                  },
+                }}
+                onChange={handleQuantityChange}
+                helperText={
+                  quantityError
+                    ? quantityError
+                    : selectedRecipe
+                      ? t("production.form.servingsPerBatch", {
+                          servings: selectedRecipe.servings,
+                        })
+                      : t("production.form.selectRecipeForServings")
+                }
+              />
+              <Button type="submit" variant="contained" disabled={submitting}>
+                {submitting
+                  ? t("production.form.adding")
+                  : t("production.form.submit")}
+              </Button>
+            </Stack>
+          </form>
+          {formError && <Alert severity="error">{formError}</Alert>}
+        </>
+      )}
       {isProductionLoading ? (
-        <Typography>Loading...</Typography>
+        <Typography>{t("production.loading")}</Typography>
       ) : productionBatches.length === 0 ? (
-        <Typography>No production batches found.</Typography>
+        <Typography>{t("production.empty")}</Typography>
       ) : (
         <TableContainer
           component={Paper}
@@ -312,7 +295,7 @@ function ProductionBatchesPage() {
                     borderBottom: "1px solid #e0e0e0",
                   }}
                 >
-                  Recipe
+                  {t("production.table.recipe")}
                 </TableCell>
                 <TableCell
                   align="center"
@@ -323,7 +306,7 @@ function ProductionBatchesPage() {
                     borderBottom: "1px solid #e0e0e0",
                   }}
                 >
-                  Order
+                  {t("production.table.order")}
                 </TableCell>
                 <TableCell
                   align="center"
@@ -334,7 +317,7 @@ function ProductionBatchesPage() {
                     borderBottom: "1px solid #e0e0e0",
                   }}
                 >
-                  Batches Produced
+                  {t("production.table.batchesProduced")}
                 </TableCell>
                 <TableCell
                   align="center"
@@ -345,7 +328,7 @@ function ProductionBatchesPage() {
                     borderBottom: "1px solid #e0e0e0",
                   }}
                 >
-                  Created At
+                  {t("production.table.createdAt")}
                 </TableCell>
               </TableRow>
             </TableHead>
@@ -363,8 +346,11 @@ function ProductionBatchesPage() {
                     sx={{ borderRight: "1px solid #e0e0e0" }}
                   >
                     {p.order
-                      ? `${p.order.quantity} servings • ${p.order.status}`
-                      : "Manual Production"}
+                      ? t("production.table.orderDetails", {
+                          quantity: p.order.quantity,
+                          status: t(`orderStatuses.${p.order.status}`),
+                        })
+                      : t("production.form.manualProduction")}
                   </TableCell>
                   <TableCell
                     align="center"

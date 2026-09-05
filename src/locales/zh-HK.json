@@ -387,6 +387,45 @@
       "users": "使用者"
     }
   },
+  "production": {
+    "title": "生產批次",
+    "subtitle": "依食譜記錄生產批次。",
+    "form": {
+      "order": "訂單",
+      "recipe": "食譜",
+      "manualProduction": "手動生產",
+      "orderOption": "{{recipe}} • {{quantity}} 份 • {{status}}",
+      "recipeFromOrder": "食譜由所選訂單決定。",
+      "selectRecipe": "選擇手動生產的食譜。",
+      "batchesProduced": "生產批次數",
+      "batches": "批次",
+      "servingsPerBatch": "每個批次可生產 {{servings}} 份。",
+      "selectRecipeForServings": "選擇食譜以查看每批次的份數。",
+      "submit": "提交",
+      "adding": "新增中..."
+    },
+    "table": {
+      "recipe": "食譜",
+      "order": "訂單",
+      "batchesProduced": "生產批次數",
+      "createdAt": "建立日期",
+      "orderDetails": "{{quantity}} 份 • {{status}}"
+    },
+    "loading": "載入中...",
+    "empty": "找不到生產批次。",
+    "errors": {
+      "recipeRequired": "必須選擇食譜。",
+      "quantityInvalid": "生產批次數必須為大於零的數字。",
+      "createFailed": "無法建立生產批次。",
+      "loadFailed": "無法載入生產資料。"
+    }
+  },
+  "orderStatuses": {
+    "PENDING": "待處理",
+    "IN_PROGRESS": "進行中",
+    "FINISHED": "已完成",
+    "CANCELLED": "已取消"
+  },
   "common": {
     "errors": {
       "networkError": "無法連線至伺服器。"
